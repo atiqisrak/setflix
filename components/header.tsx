@@ -50,12 +50,13 @@ export default function Header() {
           <Logo />
         </Link>
 
-        <nav className="hidden md:flex gap-6 text-foreground/80 text-sm">
+        <nav className="hidden md:flex gap-6 text-foreground/80 text-xl">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="hover:text-foreground transition duration-200"
+              className="hover:text-foreground transition duration-200
+              hover:scale-110"
             >
               {item.label}
             </Link>
