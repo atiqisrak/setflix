@@ -40,20 +40,25 @@ export default function ExpandedCard({
       className="absolute inset-0 w-full h-full bg-gradient-to-t from-card via-card/95 to-transparent flex flex-col justify-end"
     >
       <div className="p-4 space-y-2 overflow-y-auto max-h-full">
-        <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-2">
-          {item.title}
-        </h3>
-        <div className="flex items-center gap-2 flex-wrap">
-          {item.maturity && (
-            <span className="px-2 py-0.5 border border-foreground/30 text-xs text-foreground/80">
-              {item.maturity}
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-base font-semibold text-foreground line-clamp-2 flex-1">
+            {item.title}
+          </h3>
+          <div className="flex items-center gap-1.5 bg-red-600 px-2 py-1 rounded shrink-0">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-400"></span>
             </span>
-          )}
-          {item.year && (
-            <span className="text-foreground/60 text-sm">{item.year}</span>
-          )}
-          {item.duration && (
-            <span className="text-foreground/60 text-sm">{item.duration}</span>
+            <span className="text-white text-xs font-bold uppercase tracking-wide">
+              Live
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {item.genres && item.genres.length > 0 && (
+            <span className="text-foreground/60 text-sm">
+              {item.genres[0]}
+            </span>
           )}
         </div>
 
@@ -63,7 +68,7 @@ export default function ExpandedCard({
             className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded flex items-center justify-center gap-2 text-sm font-semibold transition"
           >
             <Play size={16} fill="currentColor" />
-            Play
+            Watch Live
           </button>
           <button
             onClick={() => setIsInList(!isInList)}

@@ -3,7 +3,11 @@
 import { useState, useMemo } from "react";
 import Header from "@/components/header";
 import HeroBanner from "@/components/hero-banner";
-import ContentCarousel from "@/components/content-carousel";
+import FeaturedCategoriesShowcase from "@/components/featured-categories-showcase";
+import QuickAccessSection from "@/components/quick-access-section";
+import LiveSpotlight from "@/components/live-spotlight";
+import StatsSection from "@/components/stats-section";
+import CategoryGrid from "@/components/category-grid";
 import Footer from "@/components/footer";
 import ContentDetailModal from "@/components/content-detail-modal";
 import VideoPlayer from "@/components/video-player";
@@ -38,13 +42,21 @@ export default function Home() {
     return groupChannelsByCategory(channels);
   }, [channels]);
 
-  // Get top categories for homepage (sorted by channel count)
-  const topCategories = useMemo(() => {
+  // Get all categories for homepage (sorted by channel count)
+  const allCategories = useMemo(() => {
     const categories = Object.keys(groupedChannels);
-    return categories
-      .sort((a, b) => groupedChannels[b].length - groupedChannels[a].length)
-      .slice(0, 5);
+    return categories.sort((a, b) => groupedChannels[b].length - groupedChannels[a].length);
   }, [groupedChannels]);
+
+  // Get top categories for spotlight
+  const topCategories = useMemo(() => {
+    return allCategories.slice(0, 4);
+  }, [allCategories]);
+
+  // Get all channels for live spotlight
+  const allChannels = useMemo(() => {
+    return channels.slice(0, 100).map((channel, index) => transformIPTVToContent(channel, index));
+  }, [channels]);
 
   // Convert grouped channels to content items
   const categorizedContent = useMemo(() => {
@@ -62,16 +74,16 @@ export default function Home() {
       <Header />
       <HeroBanner onPlay={() => handlePlay()} onMoreInfo={() => handleMoreInfo(null as any)} />
 
-      <main className="px-4 md:px-8 py-8 md:py-12 space-y-8 md:space-y-12">
+      <main>
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="px-4 md:px-8 py-12 space-y-4">
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
               Loading Channels...
             </h2>
             <div className="text-foreground/60 py-8">Please wait while we load your channels...</div>
           </div>
         ) : error ? (
-          <div className="space-y-4">
+          <div className="px-4 md:px-8 py-12 space-y-4">
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
               Error Loading Channels
             </h2>
@@ -81,15 +93,38 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {/* Show top categories */}
-            {topCategories.map((category) => (
-              <ContentCarousel
-                key={category}
-                title={category}
-                items={categorizedContent[category] || []}
+            {/* Static: Featured Categories Showcase */}
+            <div className="px-4 md:px-8">
+              <FeaturedCategoriesShowcase />
+            </div>
+
+            {/* Static: Quick Access Section */}
+            <div className="px-4 md:px-8">
+              <QuickAccessSection />
+            </div>
+
+            {/* Dynamic: Live Spotlight */}
+            <div className="px-4 md:px-8">
+              <LiveSpotlight
+                channels={allChannels}
+                onPlay={handlePlay}
+                onMoreInfo={handleMoreInfo}
+              />
+            </div>
+
+            {/* Static: Stats Section */}
+            <div className="px-4 md:px-8">
+              <StatsSection />
+            </div>
+
+            {/* Mixed: Category Grid with Carousels */}
+            <div className="px-4 md:px-8">
+              <CategoryGrid
+                categories={topCategories}
+                categorizedContent={categorizedContent}
                 onPlay={handlePlay}
               />
-            ))}
+            </div>
           </>
         )}
       </main>

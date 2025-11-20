@@ -89,7 +89,16 @@ export default function ContentCard({
             loading="lazy"
           />
 
-          {/* Match/Rating Badge - Hidden for channels */}
+          {/* LIVE Badge */}
+          <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 px-2 py-1 rounded">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-400"></span>
+            </span>
+            <span className="text-white text-xs font-bold uppercase tracking-wide">
+              Live
+            </span>
+          </div>
 
           {/* Expanded Card on Hover - Overlays on thumbnail */}
           <AnimatePresence>
