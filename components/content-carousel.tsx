@@ -5,13 +5,29 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import ContentCard from "@/components/content-card";
 import ContentDetailModal from "@/components/content-detail-modal";
 
-interface ContentCarouselProps {
+interface ContentItem {
+  id: number;
   title: string;
-  category: string;
-  hideTitle?: boolean;
+  image: string;
+  url?: string;
+  rating?: number;
+  year?: number;
+  duration?: string;
+  genres?: string[];
+  description?: string;
+  match?: number;
+  maturity?: string;
 }
 
-const CONTENT_DATA = {
+interface ContentCarouselProps {
+  title: string;
+  category?: string;
+  items?: ContentItem[];
+  hideTitle?: boolean;
+  onPlay?: (item: ContentItem) => void;
+}
+
+const CONTENT_DATA: Record<string, ContentItem[]> = {
   trending: [
     { id: 1, title: "News Channel", image: "/tv-channel-news-broadcast.jpg" },
     { id: 2, title: "Sports HD", image: "/sports-broadcast-stadium-live.jpg" },
@@ -79,15 +95,21 @@ const CONTENT_DATA = {
 export default function ContentCarousel({
   title,
   category,
+  items: propItems,
   hideTitle = false,
+  onPlay,
 }: ContentCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [selectedItem, setSelectedItem] = useState<
-    (typeof CONTENT_DATA.trending)[0] | null
-  >(null);
+  const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const items =
+    propItems ||
+    (category ? CONTENT_DATA[category] : null) ||
+    CONTENT_DATA.trending ||
+    [];
 
   const updateScrollButtons = () => {
     if (scrollRef.current) {
@@ -105,7 +127,7 @@ export default function ContentCarousel({
       return () =>
         scrollElement.removeEventListener("scroll", updateScrollButtons);
     }
-  }, []);
+  }, [items]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -122,10 +144,6 @@ export default function ContentCarousel({
       setTimeout(updateScrollButtons, 300);
     }
   };
-
-  const items =
-    CONTENT_DATA[category as keyof typeof CONTENT_DATA] ||
-    CONTENT_DATA.trending;
 
   return (
     <div className="group relative">
@@ -160,16 +178,21 @@ export default function ContentCarousel({
           className="flex gap-3 md:gap-4 overflow-x-scroll scrollbar-hide pb-4 scroll-smooth"
           style={{ scrollBehavior: "smooth" }}
         >
-          {items.map((item) => (
-            <ContentCard
-              key={item.id}
-              item={item}
-              onMoreInfo={() => {
-                setSelectedItem(item);
-                setIsModalOpen(true);
-              }}
-            />
-          ))}
+          {items.length > 0 ? (
+            items.map((item) => (
+              <ContentCard
+                key={item.id}
+                item={item}
+                onPlay={onPlay ? () => onPlay(item) : undefined}
+                onMoreInfo={() => {
+                  setSelectedItem(item);
+                  setIsModalOpen(true);
+                }}
+              />
+            ))
+          ) : (
+            <div className="text-foreground/60 py-8">No content available</div>
+          )}
         </div>
 
         {selectedItem && (

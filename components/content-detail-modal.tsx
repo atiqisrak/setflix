@@ -112,7 +112,7 @@ export default function ContentDetailModal({
                   <div className="flex items-center gap-4 mb-6 flex-wrap">
                     {item.match && (
                       <span className="text-green-500 font-bold text-lg">
-                        {item.match}% Match
+                        {item.match}p
                       </span>
                     )}
                     {item.year && (
@@ -249,7 +249,11 @@ export default function ContentDetailModal({
                         <h3 className="text-xl font-bold text-foreground mb-4">
                           More Like This
                         </h3>
-                        <ContentCarousel title="" category="trending" hideTitle />
+                        <ContentCarousel
+                          title=""
+                          category="trending"
+                          hideTitle
+                        />
                       </div>
                     </div>
                   )}
