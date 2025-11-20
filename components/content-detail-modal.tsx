@@ -112,7 +112,7 @@ export default function ContentDetailModal({
                   <div className="flex items-center gap-4 mb-6 flex-wrap">
                     {item.match && (
                       <span className="text-green-500 font-bold text-lg">
-                        {item.match}p
+                        {item.match}% Match
                       </span>
                     )}
                     {item.year && (

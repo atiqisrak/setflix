@@ -40,12 +40,10 @@ export default function ExpandedCard({
       className="absolute inset-0 w-full h-full bg-gradient-to-t from-card via-card/95 to-transparent flex flex-col justify-end"
     >
       <div className="p-4 space-y-2 overflow-y-auto max-h-full">
+        <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-2">
+          {item.title}
+        </h3>
         <div className="flex items-center gap-2 flex-wrap">
-          {item.match && (
-            <span className="text-green-500 font-bold text-sm">
-              {item.match}% Match
-            </span>
-          )}
           {item.maturity && (
             <span className="px-2 py-0.5 border border-foreground/30 text-xs text-foreground/80">
               {item.maturity}

@@ -132,6 +132,16 @@ export function transformIPTVToContent(
   // This is just for UI display, not actual quality rating
   const matchPercentage = Math.floor(Math.random() * 14) + 85; // Random between 85-98
   
+  // Build better description
+  const category = detectCategory(channel);
+  let description = `Live ${category.toLowerCase()} channel`;
+  if (channel.quality) {
+    description += ` - ${channel.quality}`;
+  }
+  if (channel.group && channel.group !== category) {
+    description += ` • ${channel.group}`;
+  }
+  
   return {
     id: index + 1,
     title: channel.name,
@@ -139,9 +149,9 @@ export function transformIPTVToContent(
     url: channel.url,
     // Don't set rating - quality (720p, 1080p) is not a rating percentage
     rating: undefined,
-    match: matchPercentage, // Use generated match percentage instead
-    genres: channel.group ? [channel.group] : undefined,
-    description: `Live streaming channel${channel.quality ? ` - ${channel.quality}` : ""}`,
+    match: undefined, // Hide match percentage
+    genres: [category, ...(channel.group && channel.group !== category ? [channel.group] : [])],
+    description,
   };
 }
 
@@ -159,7 +169,102 @@ export async function getIPTVChannels(): Promise<IPTVChannel[]> {
 }
 
 /**
- * Groups channels by category/group
+ * Detects category from channel name and group
+ */
+export function detectCategory(channel: IPTVChannel): string {
+  const name = channel.name.toLowerCase();
+  const group = channel.group?.toLowerCase() || "";
+
+  // News categories
+  if (
+    name.includes("news") ||
+    name.includes("cnn") ||
+    name.includes("bbc") ||
+    name.includes("fox news") ||
+    name.includes("al jazeera") ||
+    group.includes("news")
+  ) {
+    return "News";
+  }
+
+  // Sports categories
+  if (
+    name.includes("sport") ||
+    name.includes("espn") ||
+    name.includes("football") ||
+    name.includes("soccer") ||
+    name.includes("basketball") ||
+    name.includes("baseball") ||
+    name.includes("tennis") ||
+    name.includes("golf") ||
+    group.includes("sport")
+  ) {
+    return "Sports";
+  }
+
+  // Movies categories
+  if (
+    name.includes("movie") ||
+    name.includes("cinema") ||
+    name.includes("film") ||
+    name.includes("hbo") ||
+    name.includes("showtime") ||
+    group.includes("movie")
+  ) {
+    return "Movies";
+  }
+
+  // Music categories
+  if (
+    name.includes("music") ||
+    name.includes("mtv") ||
+    name.includes("vh1") ||
+    name.includes("radio") ||
+    group.includes("music")
+  ) {
+    return "Music";
+  }
+
+  // Entertainment categories
+  if (
+    name.includes("entertainment") ||
+    name.includes("comedy") ||
+    name.includes("drama") ||
+    name.includes("reality") ||
+    group.includes("entertainment")
+  ) {
+    return "Entertainment";
+  }
+
+  // Documentary categories
+  if (
+    name.includes("documentary") ||
+    name.includes("discovery") ||
+    name.includes("national geographic") ||
+    name.includes("history") ||
+    name.includes("nature") ||
+    group.includes("documentary")
+  ) {
+    return "Documentary";
+  }
+
+  // Kids categories
+  if (
+    name.includes("kids") ||
+    name.includes("cartoon") ||
+    name.includes("disney") ||
+    name.includes("nickelodeon") ||
+    group.includes("kids")
+  ) {
+    return "Kids";
+  }
+
+  // Use group if available, otherwise "Other"
+  return channel.group || "Other";
+}
+
+/**
+ * Groups channels by category/group with smart categorization
  */
 export function groupChannelsByCategory(
   channels: IPTVChannel[]
@@ -167,7 +272,7 @@ export function groupChannelsByCategory(
   const grouped: Record<string, IPTVChannel[]> = {};
 
   channels.forEach((channel) => {
-    const category = channel.group || "Other";
+    const category = detectCategory(channel);
     if (!grouped[category]) {
       grouped[category] = [];
     }

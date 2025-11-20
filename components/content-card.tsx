@@ -51,7 +51,7 @@ export default function ContentCard({
   const handleMouseEnter = () => {
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(true);
-    }, 500);
+    }, 200);
   };
 
   const handleMouseLeave = () => {
@@ -73,7 +73,7 @@ export default function ContentCard({
       animate={{
         width: isHovered ? `${expandedWidth}px` : `${baseWidth}px`,
       }}
-      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
       style={{ zIndex: isHovered ? 50 : 1 }}
     >
       <div
@@ -89,12 +89,7 @@ export default function ContentCard({
             loading="lazy"
           />
 
-          {/* Match/Rating Badge */}
-          {(item.match || item.rating) && (
-            <div className="absolute top-2 right-2 bg-accent text-accent-foreground px-2 py-1 rounded text-xs font-bold z-10">
-              {item.match || item.rating}%
-            </div>
-          )}
+          {/* Match/Rating Badge - Hidden for channels */}
 
           {/* Expanded Card on Hover - Overlays on thumbnail */}
           <AnimatePresence>

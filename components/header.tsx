@@ -3,17 +3,22 @@
 import { useState, useEffect } from "react";
 import { Search, Bell, User, Menu, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
 import ProfileDropdown from "@/components/profile-dropdown";
 import NotificationsDropdown from "@/components/notifications-dropdown";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearch } from "@/contexts/search-context";
 
 export default function Header() {
+  const router = useRouter();
+  const { setSearchQuery, addRecentSearch } = useSearch();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +31,9 @@ export default function Header() {
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Browse Channels", href: "/browse" },
-    { label: "My Channels", href: "/my-list" },
+    { label: "All Channels", href: "/channels" },
+    { label: "Browse", href: "/browse" },
+    { label: "My List", href: "/my-list" },
   ];
 
   return (
@@ -69,16 +75,22 @@ export default function Header() {
                 >
                   <input
                     type="text"
-                    placeholder="Titles, people, genres..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder="Search channels..."
                     autoFocus
-                    onBlur={() => setIsSearchOpen(false)}
+                    onBlur={() => {
+                      setTimeout(() => setIsSearchOpen(false), 200);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        const query = (e.target as HTMLInputElement).value;
+                        const query = searchInput.trim();
                         if (query) {
-                          window.location.href = `/search?q=${encodeURIComponent(
-                            query
-                          )}`;
+                          setSearchQuery(query);
+                          addRecentSearch(query);
+                          router.push(`/search?q=${encodeURIComponent(query)}`);
+                          setIsSearchOpen(false);
+                          setSearchInput("");
                         }
                       }
                     }}
@@ -92,13 +104,15 @@ export default function Header() {
                 if (!isSearchOpen) {
                   setIsSearchOpen(true);
                 } else {
-                  const input = document.querySelector(
-                    'input[placeholder="Titles, people, genres..."]'
-                  ) as HTMLInputElement;
-                  if (input?.value) {
-                    window.location.href = `/search?q=${encodeURIComponent(
-                      input.value
-                    )}`;
+                  const query = searchInput.trim();
+                  if (query) {
+                    setSearchQuery(query);
+                    addRecentSearch(query);
+                    router.push(`/search?q=${encodeURIComponent(query)}`);
+                    setIsSearchOpen(false);
+                    setSearchInput("");
+                  } else {
+                    setIsSearchOpen(false);
                   }
                 }
               }}
