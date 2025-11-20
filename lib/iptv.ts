@@ -59,7 +59,7 @@ export async function fetchIPTVPlaylist(
 export function parseIPTVPlaylist(m3uContent: string): IPTVChannel[] {
   try {
     const parsed = parser.parse(m3uContent);
-    return parsed.items.map((item) => {
+    return parsed.items.map((item, index) => {
       // Extract quality from name (e.g., "Channel Name (720p)")
       const qualityMatch = item.name.match(/\((\d+p)\)/i);
       const quality = qualityMatch ? qualityMatch[1] : undefined;
@@ -70,8 +70,21 @@ export function parseIPTVPlaylist(m3uContent: string): IPTVChannel[] {
         .replace(/\s*\[.*?\]/g, "")
         .trim();
 
+      // Generate deterministic ID from URL if tvg.id is not available
+      const generateId = (url: string, idx: number): string => {
+        if (item.tvg?.id) return item.tvg.id;
+        // Create a simple hash from URL for deterministic ID
+        let hash = 0;
+        for (let i = 0; i < url.length; i++) {
+          const char = url.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash; // Convert to 32bit integer
+        }
+        return `channel-${Math.abs(hash).toString(36)}-${idx}`;
+      };
+
       return {
-        id: item.tvg?.id || `channel-${Math.random().toString(36).substr(2, 9)}`,
+        id: generateId(item.url, index),
         name: cleanName,
         url: item.url,
         tvgId: item.tvg?.id,
@@ -128,10 +141,6 @@ export function transformIPTVToContent(
   channel: IPTVChannel,
   index: number
 ): SetflixContentItem {
-  // Generate a reasonable match percentage for live channels (85-98%)
-  // This is just for UI display, not actual quality rating
-  const matchPercentage = Math.floor(Math.random() * 14) + 85; // Random between 85-98
-  
   // Build better description
   const category = detectCategory(channel);
   let description = `Live ${category.toLowerCase()} channel`;

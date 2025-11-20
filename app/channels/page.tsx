@@ -1,27 +1,57 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import ChannelCard from "@/components/channel-card";
 import VideoPlayer from "@/components/video-player";
 import ContentDetailModal from "@/components/content-detail-modal";
 import { useIPTVChannels } from "@/hooks/use-iptv-channels";
 import { useSearch } from "@/contexts/search-context";
-import { SetflixContentItem, groupChannelsByCategory, transformIPTVToContent } from "@/lib/iptv";
-import { Search, X, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  SetflixContentItem,
+  groupChannelsByCategory,
+  transformIPTVToContent,
+} from "@/lib/iptv";
+import { SlidersHorizontal, XCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import FilterSidebar from "@/components/channels/filter-sidebar";
+import SearchBar from "@/components/channels/search-bar";
+import ViewControls from "@/components/channels/view-controls";
+import ChannelsGrid from "@/components/channels/channels-grid";
+import Pagination from "@/components/channels/pagination";
+
+type ViewMode = "grid-small" | "grid-medium" | "grid-large" | "list";
 
 export default function AllChannelsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [currentStreamUrl, setCurrentStreamUrl] = useState<string>("");
   const [currentStreamTitle, setCurrentStreamTitle] = useState<string>("");
-  const [selectedContent, setSelectedContent] = useState<SetflixContentItem | null>(null);
+  const [selectedContent, setSelectedContent] =
+    useState<SetflixContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  
+  const [viewMode, setViewMode] = useState<ViewMode>("grid-medium");
+  const [recentFilters, setRecentFilters] = useState<string[]>([]);
+
+  // Load recent filters from localStorage on client mount
+  useEffect(() => {
+    const saved = localStorage.getItem("recent-filters");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setRecentFilters(parsed);
+        }
+      } catch (e) {
+        console.error("Error loading recent filters:", e);
+      }
+    }
+  }, []);
+
   const ITEMS_PER_PAGE = 24;
 
   const { channels, isLoading, error } = useIPTVChannels();
@@ -36,12 +66,30 @@ export default function AllChannelsPage() {
   // Get all categories sorted by channel count
   const categories = useMemo(() => {
     const cats = Object.keys(groupedChannels);
-    return ["all", ...cats.sort((a, b) => {
+    return cats.sort((a, b) => {
       const countA = groupedChannels[a]?.length || 0;
       const countB = groupedChannels[b]?.length || 0;
       return countB - countA;
-    })];
+    });
   }, [groupedChannels]);
+
+  // Get popular categories (top 8)
+  const popularCategories = useMemo(() => {
+    return categories.slice(0, 8);
+  }, [categories]);
+
+  // Save recent filters
+  const saveRecentFilter = useCallback((category: string) => {
+    if (category === "all") return;
+    setRecentFilters((prev) => {
+      const updated = [category, ...prev.filter((f) => f !== category)].slice(
+        0,
+        5
+      );
+      localStorage.setItem("recent-filters", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   // Filter channels based on selected category and search
   const filteredChannels = useMemo(() => {
@@ -62,7 +110,9 @@ export default function AllChannelsPage() {
       );
     }
 
-    return filtered.map((channel, index) => transformIPTVToContent(channel, index));
+    return filtered.map((channel, index) =>
+      transformIPTVToContent(channel, index)
+    );
   }, [channels, selectedCategory, groupedChannels, localSearchQuery]);
 
   // Pagination calculations
@@ -99,83 +149,119 @@ export default function AllChannelsPage() {
     setSearchQuery(query);
   };
 
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    saveRecentFilter(category);
+    setShowFilters(false);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedCategory("all");
+    setLocalSearchQuery("");
+  };
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== "all") count++;
+    if (localSearchQuery.trim()) count++;
+    return count;
+  }, [selectedCategory, localSearchQuery]);
+
   return (
     <div className="min-h-screen bg-black">
       <Header />
 
       <main className="pt-20 pb-12">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+        <div className="max-w-[1920px] mx-auto px-4 md:px-6 lg:px-8">
           {/* Header Section */}
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              All Channels
-            </h1>
-
-            {/* Search and Filter Bar */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              {/* Search */}
-              <div className="relative flex-1">
-                <Search
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
-                <input
-                  type="text"
-                  value={localSearchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search channels..."
-                  className="w-full bg-gray-900/50 border border-gray-800 rounded-lg px-12 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition"
-                />
-                {localSearchQuery && (
-                  <button
-                    onClick={() => handleSearch("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold text-white">
+                All Channels
+              </h1>
+              <div className="flex items-center gap-2">
+                {activeFiltersCount > 0 && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    onClick={handleClearFilters}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-red-600/20 border border-red-600/50 rounded-lg text-red-400 hover:bg-red-600/30 transition text-sm"
                   >
-                    <X size={20} />
-                  </button>
+                    <XCircle size={16} />
+                    <span>Clear Filters</span>
+                    <span className="bg-red-600/50 px-1.5 py-0.5 rounded text-xs font-medium">
+                      {activeFiltersCount}
+                    </span>
+                  </motion.button>
                 )}
+                {/* Filter Toggle (Mobile) */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="md:hidden flex items-center gap-2 px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-lg text-white hover:bg-gray-900 transition relative"
+                >
+                  <SlidersHorizontal size={18} />
+                  <span>Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-white text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </button>
               </div>
-
-              {/* Filter Toggle (Mobile) */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="md:hidden flex items-center gap-2 px-4 py-3 bg-gray-900/50 border border-gray-800 rounded-lg text-white hover:bg-gray-900 transition"
-              >
-                <Filter size={18} />
-                <span>Filters</span>
-              </button>
             </div>
 
-            {/* Category Filter */}
-            <div className={`flex flex-wrap gap-2 transition-all duration-200 ${showFilters ? 'opacity-100 max-h-96 mb-4' : 'opacity-0 max-h-0 overflow-hidden mb-0'} md:opacity-100 md:max-h-none md:mb-0`}>
-              {categories.map((category) => {
-                const count = category !== "all" ? groupedChannels[category]?.length || 0 : channels.length;
-                return (
-                  <button
-                    key={category}
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      setShowFilters(false);
-                    }}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150 ${
-                      selectedCategory === category
-                        ? "bg-white text-black"
-                        : "bg-gray-900/50 text-gray-300 hover:bg-gray-800 hover:text-white border border-gray-800"
-                    }`}
-                  >
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                    <span className="ml-2 text-xs opacity-70">({count})</span>
-                  </button>
-                );
-              })}
+            {/* Search and Controls Bar */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <SearchBar
+                value={localSearchQuery}
+                onChange={handleSearch}
+                placeholder="Search channels..."
+              />
+
+              <div className="flex items-center gap-2">
+                <ViewControls
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
+
+                {/* Filter Toggle */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-lg text-white hover:bg-gray-900 transition relative"
+                >
+                  <SlidersHorizontal size={18} />
+                  <span className="hidden sm:inline">Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-white text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Filter Sidebar */}
+          <FilterSidebar
+            isOpen={showFilters}
+            onClose={() => setShowFilters(false)}
+            categories={categories}
+            popularCategories={popularCategories}
+            groupedChannels={groupedChannels}
+            selectedCategory={selectedCategory}
+            onCategorySelect={handleCategorySelect}
+            channelsLength={channels.length}
+            recentFilters={recentFilters}
+          />
 
           {/* Results Count */}
           {!isLoading && !error && filteredChannels.length > 0 && (
             <div className="mb-6 flex items-center justify-between">
               <div className="text-gray-400 text-sm">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredChannels.length)} of {filteredChannels.length} channel{filteredChannels.length !== 1 ? "s" : ""}
+                Showing {startIndex + 1}-
+                {Math.min(endIndex, filteredChannels.length)} of{" "}
+                {filteredChannels.length} channel
+                {filteredChannels.length !== 1 ? "s" : ""}
                 {selectedCategory !== "all" && ` in ${selectedCategory}`}
                 {localSearchQuery && ` matching "${localSearchQuery}"`}
               </div>
@@ -183,144 +269,30 @@ export default function AllChannelsPage() {
           )}
 
           {/* Channels Grid */}
-          {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {[...Array(12)].map((_, i) => (
-                <div
-                  key={i}
-                  className="aspect-[4/3] bg-gray-900/50 rounded-lg animate-pulse"
-                />
-              ))}
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="text-red-400 mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-white mb-2">
-                Failed to load channels
-              </h2>
-              <p className="text-gray-400">
-                Please try again later
-              </p>
-            </div>
-          ) : filteredChannels.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 mb-8">
-                {displayedChannels.map((item) => (
-                  <ChannelCard
-                    key={item.id}
-                    item={item}
-                    onPlay={() => handlePlay(item)}
-                    onMoreInfo={() => handleMoreInfo(item)}
-                  />
-                ))}
-              </div>
+          <div
+            className={cn(
+              "transition-all duration-300",
+              showFilters && "md:ml-[320px]"
+            )}
+          >
+            <ChannelsGrid
+              channels={displayedChannels}
+              viewMode={viewMode}
+              onPlay={handlePlay}
+              onMoreInfo={handleMoreInfo}
+              isLoading={isLoading}
+              error={error}
+              searchQuery={localSearchQuery}
+            />
 
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 pt-8 border-t border-gray-900">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition flex items-center gap-2 text-sm"
-                    >
-                      <ChevronLeft size={18} />
-                      <span className="hidden sm:inline">Previous</span>
-                    </button>
-
-                    {/* Page Numbers */}
-                    <div className="flex items-center gap-1">
-                      {/* First page */}
-                      {currentPage > 4 && totalPages > 7 && (
-                        <>
-                          <button
-                            onClick={() => setCurrentPage(1)}
-                            className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-900/50 text-gray-300 hover:bg-gray-800 hover:text-white border border-gray-800 transition"
-                          >
-                            1
-                          </button>
-                          {currentPage > 5 && (
-                            <span className="px-2 text-gray-500">...</span>
-                          )}
-                        </>
-                      )}
-
-                      {/* Page range around current */}
-                      {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
-                        let pageNum: number;
-                        if (totalPages <= 7) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 4) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 3) {
-                          pageNum = totalPages - 6 + i;
-                        } else {
-                          pageNum = currentPage - 3 + i;
-                        }
-
-                        if (pageNum < 1 || pageNum > totalPages) return null;
-
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => setCurrentPage(pageNum)}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                              currentPage === pageNum
-                                ? "bg-white text-black"
-                                : "bg-gray-900/50 text-gray-300 hover:bg-gray-800 hover:text-white border border-gray-800"
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-
-                      {/* Last page */}
-                      {currentPage < totalPages - 3 && totalPages > 7 && (
-                        <>
-                          {currentPage < totalPages - 4 && (
-                            <span className="px-2 text-gray-500">...</span>
-                          )}
-                          <button
-                            onClick={() => setCurrentPage(totalPages)}
-                            className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-900/50 text-gray-300 hover:bg-gray-800 hover:text-white border border-gray-800 transition"
-                          >
-                            {totalPages}
-                          </button>
-                        </>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition flex items-center gap-2 text-sm"
-                    >
-                      <span className="hidden sm:inline">Next</span>
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-
-                  {/* Page info */}
-                  <div className="text-gray-400 text-sm">
-                    Page {currentPage} of {totalPages}
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <Search size={48} className="text-gray-600 mb-4" />
-              <h2 className="text-xl font-semibold text-white mb-2">
-                No channels found
-              </h2>
-              <p className="text-gray-400">
-                {localSearchQuery
-                  ? "Try a different search term"
-                  : "No channels available in this category"}
-              </p>
-            </div>
-          )}
+            {!isLoading && !error && filteredChannels.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
+          </div>
         </div>
       </main>
 
@@ -350,4 +322,3 @@ export default function AllChannelsPage() {
     </div>
   );
 }
-

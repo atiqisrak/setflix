@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -11,10 +11,10 @@ import { Search, X } from "lucide-react";
 import { useSearch } from "@/contexts/search-context";
 import { SetflixContentItem } from "@/lib/iptv";
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") || "";
-  
+
   const {
     searchQuery,
     setSearchQuery,
@@ -27,7 +27,8 @@ export default function SearchPage() {
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [currentStreamUrl, setCurrentStreamUrl] = useState<string>("");
   const [currentStreamTitle, setCurrentStreamTitle] = useState<string>("");
-  const [selectedContent, setSelectedContent] = useState<SetflixContentItem | null>(null);
+  const [selectedContent, setSelectedContent] =
+    useState<SetflixContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Sync URL query param with search state
@@ -43,7 +44,11 @@ export default function SearchPage() {
       setSearchQuery(query.trim());
       addRecentSearch(query.trim());
       // Update URL without reload
-      window.history.pushState({}, "", `/search?q=${encodeURIComponent(query.trim())}`);
+      window.history.pushState(
+        {},
+        "",
+        `/search?q=${encodeURIComponent(query.trim())}`
+      );
     }
   };
 
@@ -129,7 +134,8 @@ export default function SearchPage() {
               {searchResults.length > 0 ? (
                 <>
                   <h2 className="text-2xl font-bold text-foreground mb-6">
-                    {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for "{searchQuery}"
+                    {searchResults.length} result
+                    {searchResults.length !== 1 ? "s" : ""} for "{searchQuery}"
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {searchResults.map((item) => (
@@ -194,5 +200,27 @@ export default function SearchPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background">
+          <Header />
+          <main className="pt-24 px-4 md:px-8 py-8">
+            <div className="max-w-6xl mx-auto">
+              <div className="flex items-center justify-center py-20">
+                <div className="text-foreground/60">Loading...</div>
+              </div>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   );
 }
