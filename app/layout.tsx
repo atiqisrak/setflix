@@ -53,9 +53,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Auth0Provider>
-          <QueryProvider>
-            <SearchProvider>{children}</SearchProvider>
-          </QueryProvider>
+        <QueryProvider>
+          <SearchProvider>{children}</SearchProvider>
+        </QueryProvider>
         </Auth0Provider>
         <Analytics />
       </body>
