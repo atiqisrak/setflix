@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SearchProvider } from "@/contexts/search-context";
+import { ProviderProvider } from "@/contexts/provider-context";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import "./globals.css";
 
@@ -52,7 +53,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <SearchProvider>{children}</SearchProvider>
+          <ProviderProvider>
+            <SearchProvider>{children}</SearchProvider>
+          </ProviderProvider>
         </QueryProvider>
         <Analytics />
       </body>

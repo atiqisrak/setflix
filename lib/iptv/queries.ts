@@ -1,15 +1,24 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { getIPTVChannels, IPTVChannel } from "./index";
+import { getIPTVChannels, getIPTVChannelsFromProvider, IPTVChannel } from "./index";
 import { IPTV_QUERY_KEYS } from "./constants";
+import { getPreferredProvider } from "./provider-selector";
 
 /**
  * TanStack Query hook for fetching IPTV channels
  * Uses IndexedDB persistence for large cache data
+ * Now supports provider-based fetching with auto-selection
  */
-export function useIPTVChannels(): UseQueryResult<IPTVChannel[], Error> {
+export function useIPTVChannels(providerId?: string): UseQueryResult<IPTVChannel[], Error> {
+  // Use provided providerId, or fall back to preferred provider, or use default
+  const activeProviderId = providerId || (typeof window !== "undefined" ? getPreferredProvider() : null);
+  
   return useQuery({
-    queryKey: IPTV_QUERY_KEYS.channels(),
-    queryFn: getIPTVChannels,
+    queryKey: activeProviderId 
+      ? [...IPTV_QUERY_KEYS.channels(), "provider", activeProviderId]
+      : IPTV_QUERY_KEYS.channels(),
+    queryFn: () => activeProviderId 
+      ? getIPTVChannelsFromProvider(activeProviderId)
+      : getIPTVChannels(),
     staleTime: 1000 * 60 * 60, // 1 hour - data is fresh for 1 hour
     gcTime: 1000 * 60 * 60 * 24, // 24 hours - keep in cache for 24 hours
     retry: 2,

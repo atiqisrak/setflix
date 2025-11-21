@@ -21,8 +21,13 @@ import SearchBar from "@/components/channels/search-bar";
 import ViewControls from "@/components/channels/view-controls";
 import ChannelsGrid from "@/components/channels/channels-grid";
 import Pagination from "@/components/channels/pagination";
+import ProviderTabs from "@/components/channels/provider-tabs";
+import { useProviderContext } from "@/contexts/provider-context";
+import { localStorageUtils } from "@/lib/storage/storage-utils";
 
 type ViewMode = "grid-small" | "grid-medium" | "grid-large" | "list";
+
+const SELECTED_PROVIDER_KEY = "setflix-channels-selected-provider";
 
 export default function AllChannelsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -38,8 +43,11 @@ export default function AllChannelsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("grid-medium");
   const [recentFilters, setRecentFilters] = useState<string[]>([]);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
 
-  // Load recent filters from localStorage on client mount
+  const { currentProvider, selectProvider } = useProviderContext();
+
+  // Load recent filters and selected provider from localStorage on client mount
   useEffect(() => {
     const saved = localStorage.getItem("recent-filters");
     if (saved) {
@@ -52,11 +60,30 @@ export default function AllChannelsPage() {
         console.error("Error loading recent filters:", e);
       }
     }
-  }, []);
+
+    // Load selected provider from localStorage
+    const savedProvider = localStorageUtils.get<string>(SELECTED_PROVIDER_KEY);
+    if (savedProvider) {
+      setSelectedProviderId(savedProvider);
+    } else if (currentProvider) {
+      // Use current provider from context if no saved preference
+      setSelectedProviderId(currentProvider.id);
+    }
+  }, [currentProvider]);
+
+  // Save selected provider to localStorage when it changes
+  useEffect(() => {
+    if (selectedProviderId) {
+      localStorageUtils.set(SELECTED_PROVIDER_KEY, selectedProviderId);
+      // Also update the provider context
+      selectProvider(selectedProviderId);
+    }
+  }, [selectedProviderId, selectProvider]);
 
   const ITEMS_PER_PAGE = 24;
 
-  const { channels, isLoading, error } = useIPTVChannels();
+  // Fetch channels from selected provider
+  const { channels, isLoading, error } = useIPTVChannels(selectedProviderId || undefined);
   const { setSearchQuery } = useSearch();
 
   // Get unique countries
@@ -144,10 +171,10 @@ export default function AllChannelsPage() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const displayedChannels = filteredChannels.slice(startIndex, endIndex);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters or provider change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedCountry, localSearchQuery]);
+  }, [selectedCategory, selectedCountry, localSearchQuery, selectedProviderId]);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -204,6 +231,13 @@ export default function AllChannelsPage() {
               <h1 className="text-3xl md:text-4xl font-bold text-white">
                 All Channels
               </h1>
+
+              {/* Provider Status */}
+              {selectedProviderId && (
+                <div className="text-sm text-gray-400 hidden md:block">
+                  {currentProvider?.name || "Loading..."}
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 {activeFiltersCount > 0 && (
                   <motion.button
@@ -233,6 +267,14 @@ export default function AllChannelsPage() {
                   )}
                 </button>
               </div>
+            </div>
+
+            {/* Provider Tabs */}
+            <div className="mb-6">
+              <ProviderTabs
+                selectedProviderId={selectedProviderId}
+                onProviderSelect={setSelectedProviderId}
+              />
             </div>
 
             {/* Search and Controls Bar */}
@@ -290,6 +332,9 @@ export default function AllChannelsPage() {
                 {Math.min(endIndex, filteredChannels.length)} of{" "}
                 {filteredChannels.length} channel
                 {filteredChannels.length !== 1 ? "s" : ""}
+                {selectedProviderId && currentProvider && (
+                  <span> from {currentProvider.name}</span>
+                )}
                 {selectedCategory !== "all" &&
                   ` in ${
                     selectedCategory === "Undefined"

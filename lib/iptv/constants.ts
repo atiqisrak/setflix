@@ -8,6 +8,9 @@ export const IPTV_QUERY_KEYS = {
   all: ["iptv"] as const,
   channels: () => [...IPTV_QUERY_KEYS.all, "channels"] as const,
   channel: (id: string) => [...IPTV_QUERY_KEYS.all, "channel", id] as const,
+  providers: () => [...IPTV_QUERY_KEYS.all, "providers"] as const,
+  provider: (id: string) => [...IPTV_QUERY_KEYS.all, "provider", id] as const,
+  providerHealth: () => [...IPTV_QUERY_KEYS.all, "provider-health"] as const,
 } as const;
 
 /**
@@ -17,5 +20,6 @@ export const CACHE_CONFIG = {
   STALE_TIME: 1000 * 60 * 60, // 1 hour
   GC_TIME: 1000 * 60 * 60 * 24, // 24 hours
   REFETCH_INTERVAL: 1000 * 60 * 60, // 1 hour
+  PROVIDER_HEALTH_TTL: 1000 * 60 * 5, // 5 minutes
 } as const;
 

@@ -24,15 +24,16 @@ interface UseIPTVChannelsReturn {
  * Hook for fetching IPTV channels with TanStack Query
  * Maintains backward compatibility with existing component usage
  * Uses IndexedDB persistence for large cache data (3.3MB+)
+ * Now supports provider-based fetching
  */
-export function useIPTVChannels(): UseIPTVChannelsReturn {
+export function useIPTVChannels(providerId?: string): UseIPTVChannelsReturn {
   const queryClient = useQueryClient();
   const {
     data: channels = [],
     isLoading,
     error,
     refetch: refetchQuery,
-  } = useIPTVChannelsQuery();
+  } = useIPTVChannelsQuery(providerId);
 
   // Transform channels to content items
   const contentItems: SetflixContentItem[] = useMemo(
@@ -50,8 +51,11 @@ export function useIPTVChannels(): UseIPTVChannelsReturn {
   const refetch = useCallback(async () => {
     await refetchQuery();
     // Also invalidate the query to force a fresh fetch
-    await queryClient.invalidateQueries({ queryKey: IPTV_QUERY_KEYS.channels() });
-  }, [refetchQuery, queryClient]);
+    const queryKey = providerId
+      ? [...IPTV_QUERY_KEYS.channels(), "provider", providerId]
+      : IPTV_QUERY_KEYS.channels();
+    await queryClient.invalidateQueries({ queryKey });
+  }, [refetchQuery, queryClient, providerId]);
 
   return {
     channels,
