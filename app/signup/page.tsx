@@ -27,17 +27,15 @@ export default function SignupPage() {
 
             <div className="space-y-6">
               <p className="text-foreground/80 text-sm">
-                Create your account with Auth0 to start streaming
+                Create your account to start streaming
               </p>
 
-              <a href="/api/auth/login?screen_hint=signup">
-                <Button
-                  type="button"
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-base font-semibold"
-                >
-                  Sign Up with Auth0
-                </Button>
-              </a>
+              <Button
+                type="button"
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-base font-semibold"
+              >
+                Sign Up
+              </Button>
 
               <div className="flex items-start gap-2 text-sm pt-2">
                 <input
@@ -45,7 +43,10 @@ export default function SignupPage() {
                   id="terms"
                   className="mt-1 w-4 h-4 rounded border-input bg-input text-accent focus:ring-accent focus:ring-offset-0"
                 />
-                <label htmlFor="terms" className="text-foreground/80 cursor-pointer">
+                <label
+                  htmlFor="terms"
+                  className="text-foreground/80 cursor-pointer"
+                >
                   By signing up, you agree to our{" "}
                   <Link
                     href="/terms"

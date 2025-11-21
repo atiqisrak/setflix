@@ -2,21 +2,23 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { User, Mail, LogOut, Settings } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const isAuthenticated = false;
+  const isLoading = false;
+  const user = null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      window.location.href = "/api/auth/login?returnTo=/account";
+      router.push("/login");
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -50,21 +52,11 @@ export default function AccountPage() {
           <div className="bg-card rounded-lg p-6 md:p-8 mb-8 border border-border">
             <div className="flex items-center gap-6 mb-8">
               <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center">
-                {user?.picture ? (
-                  <img
-                    src={user.picture}
-                    alt={user.name || "User"}
-                    className="w-20 h-20 rounded-full object-cover"
-                  />
-                ) : (
-                  <User size={40} className="text-accent-foreground" />
-                )}
+                <User size={40} className="text-accent-foreground" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-foreground">
-                  {user?.name || "User"}
-                </h2>
-                <p className="text-foreground/60">{user?.email || ""}</p>
+                <h2 className="text-2xl font-bold text-foreground">User</h2>
+                <p className="text-foreground/60"></p>
               </div>
             </div>
 
@@ -74,7 +66,7 @@ export default function AccountPage() {
                   <Mail size={18} />
                   Email Address
                 </span>
-                <span className="text-foreground">{user?.email || "N/A"}</span>
+                <span className="text-foreground">N/A</span>
               </div>
 
               <div className="flex items-center justify-between py-3 border-b border-border/50">
@@ -100,17 +92,12 @@ export default function AccountPage() {
             <Button className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground px-6 py-3 rounded transition">
               Change Password
             </Button>
-            <a
-              href={`/api/auth/logout?returnTo=${encodeURIComponent(
-                window.location.origin
-              )}`}
-              className="block"
-            >
+            <Link href="/login" className="block">
               <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3 rounded transition flex items-center justify-center gap-2">
                 <LogOut size={18} />
                 Sign Out
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </main>

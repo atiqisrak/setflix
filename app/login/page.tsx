@@ -24,18 +24,14 @@ export default function LoginPage() {
             <p className="text-foreground/60 mb-8">Welcome back to Setflix</p>
 
             <div className="space-y-6">
-              <p className="text-foreground/80 text-sm">
-                Sign in with your Auth0 account to continue
-              </p>
+              <p className="text-foreground/80 text-sm">Sign in to continue</p>
 
-              <a href="/api/auth/login">
-                <Button
-                  type="button"
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-base font-semibold"
-                >
-                  Sign In with Auth0
-                </Button>
-              </a>
+              <Button
+                type="button"
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-base font-semibold"
+              >
+                Sign In
+              </Button>
             </div>
 
             <div className="mt-6 text-center">
