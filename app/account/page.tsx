@@ -8,47 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 
 export default function AccountPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-24 px-4 md:px-8 py-12">
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center text-foreground/60">Loading...</div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-24 px-4 md:px-8 py-12">
-          <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
-              Account
-            </h1>
-            <div className="bg-card rounded-lg p-6 md:p-8 mb-8 border border-border text-center">
-              <p className="text-foreground/80 mb-6">
-                Please sign in to view your account
-              </p>
-              <Link href="/api/auth/login">
-                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3 rounded transition">
-                  Sign In
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -114,12 +74,10 @@ export default function AccountPage() {
             <Button className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground px-6 py-3 rounded transition">
               Change Password
             </Button>
-            <Link href="/api/auth/logout" className="block">
-              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3 rounded transition flex items-center justify-center gap-2">
-                <LogOut size={18} />
-                Sign Out
-              </Button>
-            </Link>
+            <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3 rounded transition flex items-center justify-center gap-2">
+              <LogOut size={18} />
+              Sign Out
+            </Button>
           </div>
         </div>
       </main>

@@ -1,15 +1,17 @@
 "use client";
 
-import { useUser } from "@auth0/nextjs-auth0/client";
+interface User {
+  name?: string | null;
+  email?: string | null;
+  picture?: string | null;
+}
 
 export function useAuth() {
-  const { user, error, isLoading } = useUser();
-
   return {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    error,
+    user: null as User | null,
+    isAuthenticated: false,
+    isLoading: false,
+    error: null,
   };
 }
 
