@@ -7,29 +7,34 @@ import HeroSection from "./components/hero-section";
 import ModalTabs from "./components/modal-tabs";
 import TabContent from "./components/tab-content";
 
+interface ContentDetailModalItem {
+  id: number;
+  title: string;
+  image: string;
+  url?: string;
+  rating?: number;
+  year?: number;
+  duration?: string;
+  genres?: string[];
+  description?: string;
+  match?: number;
+  maturity?: string;
+  cast?: string[];
+  director?: string;
+  releaseDate?: string;
+}
+
 interface ContentDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  item: {
-    id: number;
-    title: string;
-    image: string;
-    rating?: number;
-    year?: number;
-    duration?: string;
-    genres?: string[];
-    description?: string;
-    match?: number;
-    maturity?: string;
-    cast?: string[];
-    director?: string;
-    releaseDate?: string;
-  };
+  onPlay?: (item: ContentDetailModalItem) => void;
+  item: ContentDetailModalItem;
 }
 
 export default function ContentDetailModal({
   isOpen,
   onClose,
+  onPlay,
   item,
 }: ContentDetailModalProps) {
   const [isLiked, setIsLiked] = useState(false);
@@ -76,6 +81,7 @@ export default function ContentDetailModal({
               isLiked={isLiked}
               isInList={isInList}
               onClose={onClose}
+              onPlay={onPlay ? () => onPlay(item) : undefined}
               onToggleLike={() => setIsLiked(!isLiked)}
               onToggleList={() => setIsInList(!isInList)}
             />
@@ -95,4 +101,3 @@ export default function ContentDetailModal({
     </AnimatePresence>
   );
 }
-

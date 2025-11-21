@@ -12,23 +12,32 @@ import Footer from "@/components/footer";
 import ContentDetailModal from "@/components/content-detail-modal";
 import VideoPlayer from "@/components/video-player";
 import { useIPTVChannels } from "@/hooks/use-iptv-channels";
-import { SetflixContentItem, groupChannelsByCategory, transformIPTVToContent } from "@/lib/iptv";
+import {
+  SetflixContentItem,
+  groupChannelsByCategory,
+  transformIPTVToContent,
+} from "@/lib/iptv";
 
 export default function Home() {
-  const [selectedContent, setSelectedContent] = useState<SetflixContentItem | null>(null);
+  const [selectedContent, setSelectedContent] =
+    useState<SetflixContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [currentStreamUrl, setCurrentStreamUrl] = useState<string>("");
   const [currentStreamTitle, setCurrentStreamTitle] = useState<string>("");
 
   const { channels, isLoading, error } = useIPTVChannels();
-  
+
   const handleMoreInfo = (content: SetflixContentItem) => {
     setSelectedContent(content);
     setIsModalOpen(true);
   };
 
-  const handlePlay = (item?: SetflixContentItem) => {
+  const handlePlay = (
+    item?:
+      | SetflixContentItem
+      | { url?: string; title: string; [key: string]: any }
+  ) => {
     if (item?.url) {
       setCurrentStreamUrl(item.url);
       setCurrentStreamTitle(item.title);
@@ -45,7 +54,9 @@ export default function Home() {
   // Get all categories for homepage (sorted by channel count)
   const allCategories = useMemo(() => {
     const categories = Object.keys(groupedChannels);
-    return categories.sort((a, b) => groupedChannels[b].length - groupedChannels[a].length);
+    return categories.sort(
+      (a, b) => groupedChannels[b].length - groupedChannels[a].length
+    );
   }, [groupedChannels]);
 
   // Get top categories for spotlight
@@ -55,7 +66,9 @@ export default function Home() {
 
   // Get all channels for live spotlight
   const allChannels = useMemo(() => {
-    return channels.slice(0, 100).map((channel, index) => transformIPTVToContent(channel, index));
+    return channels
+      .slice(0, 100)
+      .map((channel, index) => transformIPTVToContent(channel, index));
   }, [channels]);
 
   // Convert grouped channels to content items
@@ -72,7 +85,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <HeroBanner onPlay={() => handlePlay()} onMoreInfo={() => handleMoreInfo(null as any)} />
+      <HeroBanner
+        onPlay={() => handlePlay()}
+        onMoreInfo={() => handleMoreInfo(null as any)}
+      />
 
       <main>
         {isLoading ? (
@@ -80,7 +96,9 @@ export default function Home() {
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
               Loading Channels...
             </h2>
-            <div className="text-foreground/60 py-8">Please wait while we load your channels...</div>
+            <div className="text-foreground/60 py-8">
+              Please wait while we load your channels...
+            </div>
           </div>
         ) : error ? (
           <div className="px-4 md:px-8 py-12 space-y-4">
@@ -138,6 +156,7 @@ export default function Home() {
             setIsModalOpen(false);
             setSelectedContent(null);
           }}
+          onPlay={handlePlay}
           item={selectedContent}
         />
       )}

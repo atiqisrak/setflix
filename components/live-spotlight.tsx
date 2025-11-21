@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { SetflixContentItem } from "@/lib/iptv";
-import ContentCard from "@/components/content-card";
+import AnimatedContentCard from "@/components/animated-content-card";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -18,6 +19,21 @@ export default function LiveSpotlight({
   onMoreInfo,
 }: LiveSpotlightProps) {
   const featuredChannels = channels.slice(0, 6);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [colsPerRow, setColsPerRow] = useState(6);
+
+  useEffect(() => {
+    const updateColsPerRow = () => {
+      if (typeof window === "undefined") return;
+      const isMobile = window.innerWidth < 768;
+      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+      setColsPerRow(isMobile ? 2 : isTablet ? 3 : 6);
+    };
+
+    updateColsPerRow();
+    window.addEventListener("resize", updateColsPerRow);
+    return () => window.removeEventListener("resize", updateColsPerRow);
+  }, []);
 
   if (featuredChannels.length === 0) return null;
 
@@ -61,8 +77,15 @@ export default function LiveSpotlight({
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
-              <ContentCard
+              <AnimatedContentCard
                 item={channel}
+                index={index}
+                layout="grid"
+                totalItems={featuredChannels.length}
+                colsPerRow={colsPerRow}
+                hoveredIndex={hoveredIndex}
+                onHover={setHoveredIndex}
+                onLeave={() => setHoveredIndex(null)}
                 onPlay={onPlay ? () => onPlay(channel) : undefined}
                 onMoreInfo={onMoreInfo ? () => onMoreInfo(channel) : undefined}
               />
@@ -83,4 +106,3 @@ export default function LiveSpotlight({
     </section>
   );
 }
-

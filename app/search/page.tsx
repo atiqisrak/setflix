@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import ContentCard from "@/components/content-card";
+import AnimatedContentCard from "@/components/animated-content-card";
 import VideoPlayer from "@/components/video-player";
 import ContentDetailModal from "@/components/content-detail-modal";
 import { Search, X } from "lucide-react";
@@ -30,6 +30,24 @@ function SearchContent() {
   const [selectedContent, setSelectedContent] =
     useState<SetflixContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [colsPerRow, setColsPerRow] = useState(6);
+
+  useEffect(() => {
+    const updateColsPerRow = () => {
+      if (typeof window === "undefined") return;
+      const width = window.innerWidth;
+      if (width < 640) setColsPerRow(2);
+      else if (width < 768) setColsPerRow(3);
+      else if (width < 1024) setColsPerRow(4);
+      else if (width < 1280) setColsPerRow(5);
+      else setColsPerRow(6);
+    };
+
+    updateColsPerRow();
+    window.addEventListener("resize", updateColsPerRow);
+    return () => window.removeEventListener("resize", updateColsPerRow);
+  }, []);
 
   // Sync URL query param with search state
   useEffect(() => {
@@ -52,7 +70,11 @@ function SearchContent() {
     }
   };
 
-  const handlePlay = (item: SetflixContentItem) => {
+  const handlePlay = (
+    item:
+      | SetflixContentItem
+      | { url?: string; title: string; [key: string]: any }
+  ) => {
     if (item.url) {
       setCurrentStreamUrl(item.url);
       setCurrentStreamTitle(item.title);
@@ -138,10 +160,17 @@ function SearchContent() {
                     {searchResults.length !== 1 ? "s" : ""} for "{searchQuery}"
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {searchResults.map((item) => (
-                      <ContentCard
+                    {searchResults.map((item, index) => (
+                      <AnimatedContentCard
                         key={item.id}
                         item={item}
+                        index={index}
+                        layout="grid"
+                        totalItems={searchResults.length}
+                        colsPerRow={colsPerRow}
+                        hoveredIndex={hoveredIndex}
+                        onHover={setHoveredIndex}
+                        onLeave={() => setHoveredIndex(null)}
                         onPlay={() => handlePlay(item)}
                         onMoreInfo={() => handleMoreInfo(item)}
                       />
@@ -196,6 +225,7 @@ function SearchContent() {
             setIsModalOpen(false);
             setSelectedContent(null);
           }}
+          onPlay={handlePlay}
           item={selectedContent}
         />
       )}

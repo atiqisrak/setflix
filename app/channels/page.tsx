@@ -316,6 +316,7 @@ export default function AllChannelsPage() {
             setIsModalOpen(false);
             setSelectedContent(null);
           }}
+          onPlay={handlePlay}
           item={selectedContent}
         />
       )}

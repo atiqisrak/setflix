@@ -1,10 +1,19 @@
-import { X, Play, Plus, Check, ThumbsUp, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  X,
+  Play,
+  Plus,
+  Check,
+  ThumbsUp,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { useState } from "react";
 
 interface HeroSectionProps {
   item: {
     title: string;
     image: string;
+    url?: string;
     match?: number;
     year?: number;
     duration?: string;
@@ -14,6 +23,7 @@ interface HeroSectionProps {
   isLiked: boolean;
   isInList: boolean;
   onClose: () => void;
+  onPlay?: () => void;
   onToggleLike: () => void;
   onToggleList: () => void;
 }
@@ -23,6 +33,7 @@ export default function HeroSection({
   isLiked,
   isInList,
   onClose,
+  onPlay,
   onToggleLike,
   onToggleList,
 }: HeroSectionProps) {
@@ -72,7 +83,11 @@ export default function HeroSection({
           </div>
 
           <div className="flex gap-3 mb-6">
-            <button className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 rounded flex items-center gap-2 font-semibold transition">
+            <button
+              onClick={onPlay}
+              disabled={!item.url || !onPlay}
+              className="bg-accent hover:bg-accent/90 disabled:bg-accent/50 disabled:cursor-not-allowed text-accent-foreground px-8 py-3 rounded flex items-center gap-2 font-semibold transition"
+            >
               <Play size={20} fill="currentColor" />
               Play
             </button>
@@ -88,10 +103,7 @@ export default function HeroSection({
               className="w-12 h-12 border-2 border-foreground/30 hover:border-foreground rounded flex items-center justify-center transition bg-black/50"
               aria-label="Like"
             >
-              <ThumbsUp
-                size={20}
-                fill={isLiked ? "currentColor" : "none"}
-              />
+              <ThumbsUp size={20} fill={isLiked ? "currentColor" : "none"} />
             </button>
           </div>
 
@@ -129,4 +141,3 @@ export default function HeroSection({
     </div>
   );
 }
-

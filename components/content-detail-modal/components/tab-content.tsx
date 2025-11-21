@@ -1,8 +1,14 @@
+"use client";
+
+import { useMemo } from "react";
 import ContentCarousel from "@/components/content-carousel";
+import { useIPTVChannels } from "@/hooks/use-iptv-channels";
+import { transformIPTVToContent } from "@/lib/iptv";
 
 interface TabContentProps {
   activeTab: "overview" | "episodes" | "details";
   item: {
+    id?: number;
     genres?: string[];
     cast?: string[];
     director?: string;
@@ -12,6 +18,41 @@ interface TabContentProps {
 }
 
 export default function TabContent({ activeTab, item }: TabContentProps) {
+  const { contentItems } = useIPTVChannels();
+
+  const relatedContent = useMemo(() => {
+    if (!contentItems || contentItems.length === 0) return [];
+
+    // Filter out the current item
+    let filtered = contentItems.filter(
+      (contentItem) => contentItem.id !== item.id
+    );
+
+    // If item has genres, filter by matching genres
+    if (item.genres && item.genres.length > 0) {
+      const genreMatches = filtered.filter((contentItem) => {
+        if (!contentItem.genres || contentItem.genres.length === 0)
+          return false;
+        return contentItem.genres.some((genre) =>
+          item.genres!.some(
+            (itemGenre) =>
+              genre.toLowerCase() === itemGenre.toLowerCase() ||
+              genre.toLowerCase().includes(itemGenre.toLowerCase()) ||
+              itemGenre.toLowerCase().includes(genre.toLowerCase())
+          )
+        );
+      });
+
+      // If we have genre matches, use them; otherwise use all filtered items
+      if (genreMatches.length > 0) {
+        filtered = genreMatches;
+      }
+    }
+
+    // Limit to 20 items
+    return filtered.slice(0, 20);
+  }, [contentItems, item.id, item.genres]);
+
   if (activeTab === "overview") {
     return (
       <div>
@@ -37,7 +78,12 @@ export default function TabContent({ activeTab, item }: TabContentProps) {
           <h3 className="text-xl font-bold text-foreground mb-4">
             More Like This
           </h3>
-          <ContentCarousel title="" category="trending" hideTitle />
+          <ContentCarousel
+            title=""
+            items={relatedContent.length > 0 ? relatedContent : undefined}
+            category={relatedContent.length === 0 ? "trending" : undefined}
+            hideTitle
+          />
         </div>
       </div>
     );
@@ -92,4 +138,3 @@ export default function TabContent({ activeTab, item }: TabContentProps) {
 
   return null;
 }
-

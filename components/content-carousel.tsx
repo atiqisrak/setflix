@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import ContentCard from "@/components/content-card";
+import AnimatedContentCard from "@/components/animated-content-card";
 import ContentDetailModal from "@/components/content-detail-modal";
 
 interface ContentItem {
@@ -147,14 +147,14 @@ export default function ContentCarousel({
   };
 
   return (
-    <div className="group relative">
+    <div className="group relative overflow-visible">
       {!hideTitle && (
         <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
           {title}
         </h2>
       )}
 
-      <div className="relative">
+      <div className="relative overflow-visible">
         {/* Fade edges */}
         {canScrollLeft && (
           <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
@@ -176,7 +176,7 @@ export default function ContentCarousel({
 
         <div
           ref={scrollRef}
-          className="flex gap-3 md:gap-4 overflow-x-scroll scrollbar-hide pb-4 scroll-smooth"
+          className="flex gap-3 md:gap-4 overflow-x-scroll overflow-y-visible scrollbar-hide pb-4 scroll-smooth"
           style={{
             scrollBehavior: "smooth",
             alignItems: "flex-start",
@@ -184,12 +184,14 @@ export default function ContentCarousel({
         >
           {items.length > 0 ? (
             items.map((item, index) => (
-              <ContentCard
+              <AnimatedContentCard
                 key={item.id}
                 item={item}
                 index={index}
+                layout="carousel"
+                totalItems={items.length}
                 hoveredIndex={hoveredIndex}
-                onHover={() => setHoveredIndex(index)}
+                onHover={setHoveredIndex}
                 onLeave={() => setHoveredIndex(null)}
                 onPlay={onPlay ? () => onPlay(item) : undefined}
                 onMoreInfo={() => {
@@ -210,6 +212,7 @@ export default function ContentCarousel({
               setIsModalOpen(false);
               setSelectedItem(null);
             }}
+            onPlay={onPlay ? () => onPlay(selectedItem) : undefined}
             item={selectedItem}
           />
         )}
