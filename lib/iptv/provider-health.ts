@@ -63,61 +63,107 @@ export function saveProviderHealth(health: Record<string, ProviderHealth>): void
 
 /**
  * Check if a provider URL is accessible
+ * Uses API proxy route on client-side to bypass CORS
  */
 export async function checkProviderHealth(
   provider: ProviderConfig
 ): Promise<Omit<ProviderHealth, "providerId">> {
   const startTime = Date.now();
+  const isClientSide = typeof window !== "undefined";
   
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    const response = await fetch(provider.url, {
-      method: "HEAD",
-      signal: controller.signal,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; Setflix/1.0)",
-      },
-    });
-    
-    clearTimeout(timeoutId);
-    
-    const responseTime = Date.now() - startTime;
-    
-    if (response.ok) {
-      // Try to get approximate channel count by fetching first few lines
-      let channelCount: number | undefined;
-      try {
-        const contentResponse = await fetch(provider.url, {
-          headers: { "User-Agent": "Mozilla/5.0 (compatible; Setflix/1.0)" },
-        });
-        const text = await contentResponse.text();
-        channelCount = (text.match(/#EXTINF/g) || []).length;
-      } catch {
-        // Ignore errors in counting
+    // Use API route proxy on client-side to bypass CORS
+    if (isClientSide) {
+      const proxyUrl = `/api/playlist/health?url=${encodeURIComponent(provider.url)}`;
+      const response = await fetch(proxyUrl, {
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          status: "offline",
+          lastChecked: Date.now(),
+          responseTime: Date.now() - startTime,
+          error: errorData.error || `HTTP ${response.status}`,
+          successRate: 0,
+          consecutiveFailures: 1,
+        };
       }
-      
+
+      const healthData = await response.json();
       return {
-        status: responseTime > 5000 ? "degraded" : "online",
+        ...healthData,
         lastChecked: Date.now(),
-        responseTime,
-        channelCount,
-        successRate: 1,
-        consecutiveFailures: 0,
       };
     } else {
+      // Server-side: fetch directly (no CORS restrictions)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await fetch(provider.url, {
+        method: "HEAD",
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; Setflix/1.0)",
+          "Accept": "application/vnd.apple.mpegurl, application/x-mpegURL, text/plain, */*",
+        },
+      });
+      
+      clearTimeout(timeoutId);
+      
+      const responseTime = Date.now() - startTime;
+      
+      if (response.ok) {
+        // Try to get approximate channel count by fetching first few lines
+        let channelCount: number | undefined;
+        try {
+          const contentResponse = await fetch(provider.url, {
+            headers: { 
+              "User-Agent": "Mozilla/5.0 (compatible; Setflix/1.0)",
+              "Accept": "application/vnd.apple.mpegurl, application/x-mpegURL, text/plain, */*",
+              "Range": "bytes=0-10000", // Fetch first 10KB only
+            },
+          });
+          const text = await contentResponse.text();
+          channelCount = (text.match(/#EXTINF/g) || []).length;
+        } catch {
+          // Ignore errors in counting
+        }
+        
+        return {
+          status: responseTime > 5000 ? "degraded" : "online",
+          lastChecked: Date.now(),
+          responseTime,
+          channelCount,
+          successRate: 1,
+          consecutiveFailures: 0,
+        };
+      } else {
+        return {
+          status: "offline",
+          lastChecked: Date.now(),
+          responseTime,
+          error: `HTTP ${response.status}`,
+          successRate: 0,
+          consecutiveFailures: 1,
+        };
+      }
+    }
+  } catch (error: any) {
+    const responseTime = Date.now() - startTime;
+    
+    // Handle timeout
+    if (error.name === "AbortError" || error.name === "TimeoutError") {
       return {
         status: "offline",
         lastChecked: Date.now(),
         responseTime,
-        error: `HTTP ${response.status}`,
+        error: "Request timeout",
         successRate: 0,
         consecutiveFailures: 1,
       };
     }
-  } catch (error: any) {
-    const responseTime = Date.now() - startTime;
     
     return {
       status: "offline",

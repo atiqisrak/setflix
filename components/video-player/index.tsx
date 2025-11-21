@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { backdropVariants } from "@/lib/animations";
-import { useVideoPlayer } from "./hooks/use-video-player";
+import { useVideoPlayerEnhanced } from "./hooks/use-video-player-enhanced";
 import VideoControls from "./components/video-controls";
 import VideoError from "./components/video-error";
 
@@ -24,13 +24,18 @@ export default function VideoPlayer({
     videoRef,
     isPlaying,
     isMuted,
+    volume,
     isFullscreen,
     isLoading,
     error,
+    qualities,
+    currentQuality,
     togglePlay,
     toggleMute,
+    setVolume,
+    setQuality,
     toggleFullscreen,
-  } = useVideoPlayer({ isOpen, streamUrl });
+  } = useVideoPlayerEnhanced({ isOpen, streamUrl });
 
   if (!isOpen) return null;
 
@@ -86,9 +91,14 @@ export default function VideoPlayer({
               <VideoControls
                 isPlaying={isPlaying}
                 isMuted={isMuted}
+                volume={volume}
                 isFullscreen={isFullscreen}
+                qualities={qualities}
+                currentQuality={currentQuality}
                 onTogglePlay={togglePlay}
                 onToggleMute={toggleMute}
+                onVolumeChange={setVolume}
+                onQualityChange={setQuality}
                 onToggleFullscreen={toggleFullscreen}
               />
             )}
@@ -98,4 +108,3 @@ export default function VideoPlayer({
     </AnimatePresence>
   );
 }
-

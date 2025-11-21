@@ -19,40 +19,12 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
-  const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [buffered, setBuffered] = useState(0);
   const [qualities, setQualities] = useState<QualityLevel[]>([]);
   const [currentQuality, setCurrentQuality] = useState<number | null>(null);
 
-  // Update current time and buffered
-  useEffect(() => {
-    if (!isOpen || !videoRef.current) return;
-
-    const video = videoRef.current;
-    const updateTime = () => {
-      setCurrentTime(video.currentTime);
-      setDuration(video.duration || 0);
-      
-      // Calculate buffered percentage
-      if (video.buffered.length > 0 && video.duration > 0) {
-        const bufferedEnd = video.buffered.end(video.buffered.length - 1);
-        setBuffered((bufferedEnd / video.duration) * 100);
-      }
-    };
-
-    const interval = setInterval(updateTime, 250);
-    video.addEventListener("timeupdate", updateTime);
-
-    return () => {
-      clearInterval(interval);
-      video.removeEventListener("timeupdate", updateTime);
-    };
-  }, [isOpen]);
 
   // Initialize video player
   useEffect(() => {
@@ -192,9 +164,7 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
       });
     }
 
-    // Set initial volume and playback rate
-    video.volume = volume;
-    video.playbackRate = playbackRate;
+    // Set initial volume and playback rate (will be set after component mounts)
 
     const handlePlay = () => {
       setIsPlaying(true);
@@ -206,7 +176,6 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
     const handleLoadedData = () => {
       setIsLoading(false);
       setError(null);
-      setDuration(video.duration || 0);
     };
     const handleError = (e: Event) => {
       console.error("Video error:", e);
@@ -238,10 +207,13 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
     video.addEventListener("canplay", handleCanPlay);
     video.addEventListener("loadeddata", handleLoadedData);
     video.addEventListener("error", handleError);
-    video.addEventListener("volumechange", () => {
+    const handleVolumeChange = () => {
+      // Update state from video element - this won't cause reload since 
+      // volume is no longer in the main effect dependencies
       setIsMuted(video.muted);
       setVolume(video.volume);
-    });
+    };
+    video.addEventListener("volumechange", handleVolumeChange);
 
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -255,7 +227,7 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
       video.removeEventListener("canplay", handleCanPlay);
       video.removeEventListener("loadeddata", handleLoadedData);
       video.removeEventListener("error", handleError);
-      video.removeEventListener("volumechange", () => {});
+      video.removeEventListener("volumechange", handleVolumeChange);
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
 
       video.pause();
@@ -267,7 +239,63 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
         hlsRef.current = null;
       }
     };
-  }, [isOpen, streamUrl, volume, playbackRate]);
+  }, [isOpen, streamUrl]);
+
+  // Update volume without reinitializing the player
+  // This effect only runs when volume changes externally (like from controls)
+  // and updates the video element without reloading the stream
+  useEffect(() => {
+    if (!isOpen || !videoRef.current) return;
+    
+    const video = videoRef.current;
+    // Only update if significantly different to avoid floating point issues
+    if (Math.abs(video.volume - volume) > 0.001) {
+      video.volume = volume;
+    }
+    if (video.muted && volume > 0) {
+      video.muted = false;
+    }
+  }, [isOpen, volume]);
+
+  // Define handlers first
+  const togglePlay = useCallback(() => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play();
+    }
+  }, [isPlaying]);
+
+  const toggleMute = useCallback(() => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
+  }, [isMuted]);
+
+  const setVolumeValue = useCallback((newVolume: number) => {
+    if (!videoRef.current) return;
+    const clampedVolume = Math.max(0, Math.min(1, newVolume));
+    // Update video element directly - volumechange event will sync state
+    // This avoids triggering any effects that depend on volume
+    videoRef.current.volume = clampedVolume;
+    videoRef.current.muted = false;
+  }, []);
+
+
+
+  const toggleFullscreen = useCallback(() => {
+    if (!videoRef.current) return;
+    if (!isFullscreen) {
+      videoRef.current.requestFullscreen().catch((err) => {
+        console.error("Error entering fullscreen:", err);
+      });
+    } else {
+      document.exitFullscreen().catch((err) => {
+        console.error("Error exiting fullscreen:", err);
+      });
+    }
+  }, [isFullscreen]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -290,21 +318,13 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
           e.preventDefault();
           togglePlay();
           break;
-        case "ArrowLeft": // Left arrow - rewind 10s
-          e.preventDefault();
-          video.currentTime = Math.max(0, video.currentTime - 10);
-          break;
-        case "ArrowRight": // Right arrow - forward 10s
-          e.preventDefault();
-          video.currentTime = Math.min(video.duration, video.currentTime + 10);
-          break;
         case "ArrowUp": // Up arrow - volume up
           e.preventDefault();
-          setVolume(Math.min(1, volume + 0.1));
+          setVolumeValue(Math.min(1, volume + 0.1));
           break;
         case "ArrowDown": // Down arrow - volume down
           e.preventDefault();
-          setVolume(Math.max(0, volume - 0.1));
+          setVolumeValue(Math.max(0, volume - 0.1));
           break;
         case "m":
         case "M": // M - mute/unmute
@@ -316,63 +336,12 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
           e.preventDefault();
           toggleFullscreen();
           break;
-        case "0": // 0 - 0.5x speed
-          e.preventDefault();
-          setPlaybackRate(0.5);
-          break;
-        case "1": // 1 - 1x speed
-          e.preventDefault();
-          setPlaybackRate(1);
-          break;
-        case "2": // 2 - 2x speed
-          e.preventDefault();
-          setPlaybackRate(2);
-          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, volume, playbackRate]);
-
-  const togglePlay = useCallback(() => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
-  }, [isPlaying]);
-
-  const toggleMute = useCallback(() => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !isMuted;
-    setIsMuted(!isMuted);
-  }, [isMuted]);
-
-  const setVolumeValue = useCallback((newVolume: number) => {
-    if (!videoRef.current) return;
-    const clampedVolume = Math.max(0, Math.min(1, newVolume));
-    videoRef.current.volume = clampedVolume;
-    videoRef.current.muted = false;
-    setVolume(clampedVolume);
-    setIsMuted(false);
-  }, []);
-
-  const setPlaybackRateValue = useCallback((rate: number) => {
-    if (!videoRef.current) return;
-    const allowedRates = [0.5, 0.75, 1, 1.25, 1.5, 2];
-    const closestRate = allowedRates.reduce((prev, curr) =>
-      Math.abs(curr - rate) < Math.abs(prev - rate) ? curr : prev
-    );
-    videoRef.current.playbackRate = closestRate;
-    setPlaybackRate(closestRate);
-  }, []);
-
-  const seek = useCallback((time: number) => {
-    if (!videoRef.current) return;
-    videoRef.current.currentTime = Math.max(0, Math.min(duration, time));
-  }, [duration]);
+  }, [isOpen, volume, togglePlay, toggleMute, toggleFullscreen, setVolumeValue]);
 
   const setQuality = useCallback((levelIndex: number) => {
     if (!hlsRef.current) return;
@@ -387,29 +356,6 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
     setCurrentQuality(levelIndex);
   }, []);
 
-  const toggleFullscreen = useCallback(() => {
-    if (!videoRef.current) return;
-    if (!isFullscreen) {
-      videoRef.current.requestFullscreen().catch((err) => {
-        console.error("Error entering fullscreen:", err);
-      });
-    } else {
-      document.exitFullscreen().catch((err) => {
-        console.error("Error exiting fullscreen:", err);
-      });
-    }
-  }, [isFullscreen]);
-
-  const formatTime = useCallback((seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    
-    if (h > 0) {
-      return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-    }
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  }, []);
 
   return {
     videoRef,
@@ -417,23 +363,16 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
     isPlaying,
     isMuted,
     volume,
-    playbackRate,
     isFullscreen,
     isLoading,
     error,
-    currentTime,
-    duration,
-    buffered,
     qualities,
     currentQuality,
     togglePlay,
     toggleMute,
     setVolume: setVolumeValue,
-    setPlaybackRate: setPlaybackRateValue,
     setQuality,
-    seek,
     toggleFullscreen,
-    formatTime,
   };
 }
 
