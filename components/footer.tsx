@@ -20,28 +20,28 @@ const footerLinks = [
   {
     title: "Company",
     links: [
-      { label: "About Us", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" },
-      { label: "Investor Relations", href: "#" },
+      { label: "About Us", href: "/about" },
+      { label: "Careers", href: "/careers" },
+      { label: "Press", href: "/press" },
+      { label: "Investor Relations", href: "/investor-relations" },
     ],
   },
   {
     title: "Support",
     links: [
-      { label: "Help Center", href: "#" },
-      { label: "FAQ", href: "#" },
-      { label: "Contact Us", href: "#" },
-      { label: "Speed Test", href: "#" },
+      { label: "Help Center", href: "/help-center" },
+      { label: "FAQ", href: "/faq" },
+      { label: "Contact Us", href: "/contact" },
+      { label: "Speed Test", href: "/speed-test" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Terms of Use", href: "#" },
-      { label: "Privacy Policy", href: "#" },
-      { label: "Cookie Preferences", href: "#" },
-      { label: "Legal Notices", href: "#" },
+      { label: "Terms of Use", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Cookie Preferences", href: "/cookies" },
+      { label: "Legal Notices", href: "/legal" },
     ],
   },
   {
@@ -49,8 +49,8 @@ const footerLinks = [
     links: [
       { label: "My Account", href: "/account" },
       { label: "My List", href: "/my-list" },
-      { label: "Ways to Watch", href: "#" },
-      { label: "Corporate Info", href: "#" },
+      { label: "Ways to Watch", href: "/ways-to-watch" },
+      { label: "Corporate Info", href: "/corporate-info" },
     ],
   },
 ];
