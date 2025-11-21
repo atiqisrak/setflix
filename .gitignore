@@ -17,6 +17,9 @@
 *.spec.ts
 *.spec.tsx
 
+# auth0
+.auth0/
+.env
 # next.js
 /.next/
 /out/
