@@ -39,7 +39,7 @@ function SearchContent() {
     useState<SetflixContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [colsPerRow, setColsPerRow] = useState(6);
+  const [colsPerRow, setColsPerRow] = useState(5);
 
   useEffect(() => {
     const updateColsPerRow = () => {
@@ -49,7 +49,7 @@ function SearchContent() {
       else if (width < 768) setColsPerRow(3);
       else if (width < 1024) setColsPerRow(4);
       else if (width < 1280) setColsPerRow(5);
-      else setColsPerRow(6);
+      else setColsPerRow(5);
     };
 
     updateColsPerRow();
@@ -202,7 +202,7 @@ function SearchContent() {
                       </>
                     )}
                   </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-10">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 md:gap-6">
                     {displayResults.map((item, index) => (
                       <AnimatedContentCard
                         key={item.id}

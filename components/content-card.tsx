@@ -113,14 +113,14 @@ export default function ContentCard({
     >
       <div
         className="relative bg-card rounded overflow-hidden w-full"
-        style={{ height: isMobile ? "216px" : "264px" }}
+        style={{ height: isMobile ? "216px" : "250px" }}
       >
         {/* Thumbnail - Expands horizontally, maintains fixed height */}
-        <div className="relative w-full h-full bg-secondary overflow-hidden rounded">
+        <div className="relative w-full h-full bg-secondary overflow-hidden rounded border border-foreground/10">
           <img
             src={item.image || "/placeholder.svg"}
             alt={item.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             loading="lazy"
           />
 

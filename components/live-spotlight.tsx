@@ -19,9 +19,9 @@ export default function LiveSpotlight({
   onPlay,
   onMoreInfo,
 }: LiveSpotlightProps) {
-  const featuredChannels = channels.slice(0, 6);
+  const featuredChannels = channels.slice(0, 5);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [colsPerRow, setColsPerRow] = useState(6);
+  const [colsPerRow, setColsPerRow] = useState(5);
 
   const { photo, loading: photoLoading } = usePexelsMedia({
     query: "live television streaming broadcast",
@@ -41,7 +41,7 @@ export default function LiveSpotlight({
       if (typeof window === "undefined") return;
       const isMobile = window.innerWidth < 768;
       const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-      setColsPerRow(isMobile ? 2 : isTablet ? 3 : 6);
+      setColsPerRow(isMobile ? 2 : isTablet ? 3 : 5);
     };
 
     updateColsPerRow();
@@ -56,7 +56,7 @@ export default function LiveSpotlight({
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-accent/5"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.02),transparent_50%)]"></div>
-      
+
       {/* Dynamic Pexels Background */}
       {backgroundImage && (
         <div
@@ -95,7 +95,7 @@ export default function LiveSpotlight({
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
           {featuredChannels.map((channel, index) => (
             <motion.div
               key={channel.id}
