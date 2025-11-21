@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { SetflixContentItem } from "@/lib/iptv";
 import AnimatedContentCard from "@/components/animated-content-card";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { usePexelsMedia } from "@/hooks/use-pexels-media";
 
 interface LiveSpotlightProps {
   channels: SetflixContentItem[];
@@ -21,6 +22,19 @@ export default function LiveSpotlight({
   const featuredChannels = channels.slice(0, 6);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [colsPerRow, setColsPerRow] = useState(6);
+
+  const { photo, loading: photoLoading } = usePexelsMedia({
+    query: "live television streaming broadcast",
+    type: "photo",
+    orientation: "landscape",
+    enabled: true,
+  });
+
+  const backgroundImage = useMemo(() => {
+    if (photo?.src?.large2x) return photo.src.large2x;
+    if (photo?.src?.large) return photo.src.large;
+    return undefined;
+  }, [photo]);
 
   useEffect(() => {
     const updateColsPerRow = () => {
@@ -42,6 +56,19 @@ export default function LiveSpotlight({
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-transparent to-accent/5"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.02),transparent_50%)]"></div>
+      
+      {/* Dynamic Pexels Background */}
+      {backgroundImage && (
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-5 transition-opacity duration-1000"
+          style={{
+            backgroundImage: `url('${backgroundImage}')`,
+            opacity: photoLoading ? 0 : 0.05,
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/50 to-background"></div>
+        </div>
+      )}
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-8">

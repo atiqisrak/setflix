@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Play, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeVariants } from "@/lib/animations";
+import { usePexelsMedia } from "@/hooks/use-pexels-media";
 
 interface HeroContent {
   title: string;
   description: string;
-  image: string;
+  query: string;
   isLive?: boolean;
 }
 
@@ -18,21 +19,21 @@ const HERO_CONTENT: HeroContent[] = [
     title: "Live TV Channels",
     description:
       "Stream thousands of live channels from around the world. Watch news, sports, entertainment, and more in real-time.",
-    image: "/live-news-broadcast-professional.jpg",
+    query: "live television broadcast studio",
     isLive: true,
   },
   {
     title: "24/7 Live News",
     description:
       "Stay informed with breaking news and live coverage from trusted sources worldwide.",
-    image: "/live-news-broadcast-professional.jpg",
+    query: "news broadcast television studio",
     isLive: true,
   },
   {
     title: "Live Sports Action",
     description:
       "Catch all the live sports action, matches, and exclusive coverage as they happen.",
-    image: "/sports-broadcast-stadium-live.jpg",
+    query: "sports broadcast stadium live",
     isLive: true,
   },
 ];
@@ -45,6 +46,25 @@ interface HeroBannerProps {
 export default function HeroBanner({ onPlay, onMoreInfo }: HeroBannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const currentContent = HERO_CONTENT[currentIndex];
+  
+  const { photo: currentPhoto, loading: photoLoading } = usePexelsMedia({
+    query: currentContent.query,
+    type: "photo",
+    orientation: "landscape",
+    enabled: true,
+  });
+
+  const backgroundImage = useMemo(() => {
+    if (currentPhoto?.src?.large2x) {
+      return currentPhoto.src.large2x;
+    }
+    if (currentPhoto?.src?.large) {
+      return currentPhoto.src.large;
+    }
+    return "/live-news-broadcast-professional.jpg";
+  }, [currentPhoto]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % HERO_CONTENT.length);
@@ -52,8 +72,6 @@ export default function HeroBanner({ onPlay, onMoreInfo }: HeroBannerProps) {
 
     return () => clearInterval(interval);
   }, []);
-
-  const currentContent = HERO_CONTENT[currentIndex];
 
   return (
     <div className="relative w-full h-[500px] md:h-[80vh] lg:h-screen bg-background overflow-hidden pt-16">
@@ -67,9 +85,10 @@ export default function HeroBanner({ onPlay, onMoreInfo }: HeroBannerProps) {
           className="absolute inset-0"
         >
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
             style={{
-              backgroundImage: `url('${currentContent.image}')`,
+              backgroundImage: `url('${backgroundImage}')`,
+              opacity: photoLoading ? 0.5 : 1,
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent"></div>

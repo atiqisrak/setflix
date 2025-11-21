@@ -23,12 +23,29 @@ export async function GET(request: NextRequest) {
 
     const photo = await getPexelsPhoto(query, orientation);
     return NextResponse.json({ photo });
-  } catch (error) {
+  } catch (error: any) {
+    // Handle rate limiting gracefully - return null instead of error
+    if (error?.status === 429 || error?.message?.includes("Too Many Requests")) {
+      console.warn("Pexels API rate limit reached");
+      // Return null values so components can use fallback images
+      if (type === "video") {
+        return NextResponse.json({ video: null });
+      }
+      if (count > 1) {
+        return NextResponse.json({ photos: [] });
+      }
+      return NextResponse.json({ photo: null });
+    }
+    
     console.error("Pexels API error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch media" },
-      { status: 500 }
-    );
+    // For other errors, return null values gracefully
+    if (type === "video") {
+      return NextResponse.json({ video: null });
+    }
+    if (count > 1) {
+      return NextResponse.json({ photos: [] });
+    }
+    return NextResponse.json({ photo: null });
   }
 }
 

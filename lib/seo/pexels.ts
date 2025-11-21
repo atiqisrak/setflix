@@ -68,8 +68,13 @@ export async function getPexelsPhoto(
       return response.photos[0] as unknown as PexelsPhoto;
     }
     return null;
-  } catch (error) {
-    console.error("Error fetching Pexels photo:", error);
+  } catch (error: any) {
+    // Handle rate limiting and other errors gracefully
+    if (error?.status === 429 || error?.message?.includes("Too Many Requests")) {
+      console.warn("Pexels API rate limit reached, using fallback");
+    } else {
+      console.error("Error fetching Pexels photo:", error);
+    }
     return null;
   }
 }
@@ -98,8 +103,13 @@ export async function getPexelsPhotos(
       return response.photos as unknown as PexelsPhoto[];
     }
     return [];
-  } catch (error) {
-    console.error("Error fetching Pexels photos:", error);
+  } catch (error: any) {
+    // Handle rate limiting and other errors gracefully
+    if (error?.status === 429 || error?.message?.includes("Too Many Requests")) {
+      console.warn("Pexels API rate limit reached, using fallback");
+    } else {
+      console.error("Error fetching Pexels photos:", error);
+    }
     return [];
   }
 }

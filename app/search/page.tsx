@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -9,11 +9,17 @@ import VideoPlayer from "@/components/video-player";
 import ContentDetailModal from "@/components/content-detail-modal";
 import { Search, X } from "lucide-react";
 import { useSearch } from "@/contexts/search-context";
-import { SetflixContentItem } from "@/lib/iptv";
+import {
+  SetflixContentItem,
+  groupChannelsByCategory,
+  transformIPTVToContent,
+} from "@/lib/iptv";
+import { useIPTVChannels } from "@/hooks/use-iptv-channels";
 
 function SearchContent() {
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") || "";
+  const categoryParam = searchParams.get("category") || "";
 
   const {
     searchQuery,
@@ -23,6 +29,8 @@ function SearchContent() {
     recentSearches,
     addRecentSearch,
   } = useSearch();
+
+  const { channels, isLoading } = useIPTVChannels();
 
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [currentStreamUrl, setCurrentStreamUrl] = useState<string>("");
@@ -49,13 +57,37 @@ function SearchContent() {
     return () => window.removeEventListener("resize", updateColsPerRow);
   }, []);
 
+  // Get grouped channels by category
+  const groupedChannels = useMemo(() => {
+    if (!channels.length) return {};
+    return groupChannelsByCategory(channels);
+  }, [channels]);
+
+  // Filter channels by category if category param is present
+  const categoryResults = useMemo(() => {
+    if (!categoryParam || isLoading || !channels.length) return [];
+
+    const displayCategory =
+      categoryParam === "Undefined" ? "Browse" : categoryParam;
+    const categoryChannels = groupedChannels[displayCategory] || [];
+
+    return categoryChannels.map((channel, index) =>
+      transformIPTVToContent(channel, index)
+    );
+  }, [categoryParam, channels, groupedChannels, isLoading]);
+
+  // Determine which results to show
+  const displayResults = categoryParam ? categoryResults : searchResults;
+  const hasResults = displayResults.length > 0;
+  const isCategorySearch = !!categoryParam;
+
   // Sync URL query param with search state
   useEffect(() => {
-    if (queryParam && queryParam !== searchQuery) {
+    if (queryParam && queryParam !== searchQuery && !categoryParam) {
       setSearchQuery(queryParam);
       addRecentSearch(queryParam);
     }
-  }, [queryParam, setSearchQuery, addRecentSearch, searchQuery]);
+  }, [queryParam, setSearchQuery, addRecentSearch, searchQuery, categoryParam]);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -145,28 +177,39 @@ function SearchContent() {
             )}
           </div>
 
-          {isSearching && (
+          {(isSearching || isLoading) && (
             <div className="flex items-center justify-center py-20">
               <div className="text-foreground/60">Loading channels...</div>
             </div>
           )}
 
-          {!isSearching && searchQuery && (
+          {!isSearching && !isLoading && (searchQuery || categoryParam) && (
             <div>
-              {searchResults.length > 0 ? (
+              {hasResults ? (
                 <>
                   <h2 className="text-2xl font-bold text-foreground mb-6">
-                    {searchResults.length} result
-                    {searchResults.length !== 1 ? "s" : ""} for "{searchQuery}"
+                    {isCategorySearch ? (
+                      <>
+                        {displayResults.length}{" "}
+                        {displayResults.length === 1 ? "channel" : "channels"}{" "}
+                        in <span className="text-accent">{categoryParam}</span>
+                      </>
+                    ) : (
+                      <>
+                        {displayResults.length} result
+                        {displayResults.length !== 1 ? "s" : ""} for "
+                        {searchQuery}"
+                      </>
+                    )}
                   </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {searchResults.map((item, index) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-10">
+                    {displayResults.map((item, index) => (
                       <AnimatedContentCard
                         key={item.id}
                         item={item}
                         index={index}
                         layout="grid"
-                        totalItems={searchResults.length}
+                        totalItems={displayResults.length}
                         colsPerRow={colsPerRow}
                         hoveredIndex={hoveredIndex}
                         onHover={setHoveredIndex}
@@ -184,14 +227,16 @@ function SearchContent() {
                     No results found
                   </h2>
                   <p className="text-foreground/60">
-                    Try searching for something else
+                    {isCategorySearch
+                      ? `No channels found in ${categoryParam} category`
+                      : "Try searching for something else"}
                   </p>
                 </div>
               )}
             </div>
           )}
 
-          {!isSearching && !searchQuery && (
+          {!isSearching && !isLoading && !searchQuery && !categoryParam && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Search size={48} className="text-foreground/30 mb-4" />
               <h2 className="text-2xl font-semibold text-foreground mb-2">

@@ -77,7 +77,7 @@ export default function ContentCard({
   // Transform logic is now handled by AnimatedContentCard wrapper
   // This component only handles width expansion and overlay
 
-  const baseWidth = isMobile ? 144 : 176;
+  const baseWidth = isMobile ? 144 : 250;
   const expandedWidth = isMobile ? 300 : 350;
 
   // Card should expand immediately when hovered (either via local hover or carousel hover tracking)

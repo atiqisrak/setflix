@@ -60,8 +60,15 @@ export function usePexelsMedia({
           setPhoto(data.photo);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-        console.error("Error fetching Pexels media:", err);
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        // Don't set error for rate limiting - just use fallback images
+        if (!errorMessage.includes("Too Many Requests") && !errorMessage.includes("429")) {
+          setError(errorMessage);
+          console.error("Error fetching Pexels media:", err);
+        } else {
+          // Silently handle rate limiting - fallback images will be used
+          console.warn("Pexels API rate limit reached, using fallback images");
+        }
       } finally {
         setLoading(false);
       }
