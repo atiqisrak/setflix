@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Globe } from "lucide-react";
 import { useState } from "react";
 
@@ -11,6 +12,15 @@ export default function Footer() {
     <footer className="bg-background border-t border-border mt-20">
       <div className="px-4 md:px-8 py-12 max-w-6xl mx-auto">
         <div className="mb-8">
+          <Link href="/" className="inline-block mb-4">
+            <Image
+              src="/logo-setflix.svg"
+              alt="Setflix"
+              width={100}
+              height={33}
+              className="h-auto w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </Link>
           <p className="text-foreground/60 text-sm mb-4">
             Questions? Call{" "}
             <Link href="tel:+1-800-SETFLIX" className="hover:underline">

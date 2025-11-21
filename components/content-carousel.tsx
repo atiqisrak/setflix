@@ -176,7 +176,10 @@ export default function ContentCarousel({
         <div
           ref={scrollRef}
           className="flex gap-3 md:gap-4 overflow-x-scroll scrollbar-hide pb-4 scroll-smooth"
-          style={{ scrollBehavior: "smooth" }}
+          style={{ 
+            scrollBehavior: "smooth",
+            alignItems: "flex-start",
+          }}
         >
           {items.length > 0 ? (
             items.map((item) => (

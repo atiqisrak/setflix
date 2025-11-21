@@ -70,11 +70,15 @@ export default function ContentCard({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className="shrink-0 cursor-pointer group relative"
+      initial={{ width: baseWidth, flexBasis: baseWidth }}
       animate={{
-        width: isHovered ? `${expandedWidth}px` : `${baseWidth}px`,
+        width: isHovered ? expandedWidth : baseWidth,
+        flexBasis: isHovered ? expandedWidth : baseWidth,
       }}
       transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-      style={{ zIndex: isHovered ? 50 : 1 }}
+      style={{
+        zIndex: isHovered ? 50 : 1,
+      }}
     >
       <div
         className="relative bg-card rounded overflow-hidden w-full"

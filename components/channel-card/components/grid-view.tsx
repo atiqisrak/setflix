@@ -1,114 +1,26 @@
-"use client";
-
 import { useState } from "react";
 import { Play, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { SetflixContentItem } from "@/lib/iptv";
 import { cn } from "@/lib/utils";
 
-type ViewMode = "grid-small" | "grid-medium" | "grid-large" | "list";
+type ViewMode = "grid-small" | "grid-medium" | "grid-large";
 
-interface ChannelCardProps {
+interface GridViewProps {
   item: SetflixContentItem;
+  viewMode: ViewMode;
   onPlay?: () => void;
   onMoreInfo?: () => void;
-  viewMode?: ViewMode;
 }
 
-export default function ChannelCard({
+export default function GridView({
   item,
+  viewMode,
   onPlay,
   onMoreInfo,
-  viewMode = "grid-medium",
-}: ChannelCardProps) {
+}: GridViewProps) {
   const [isHovered, setIsHovered] = useState(false);
 
-  // List view variant
-  if (viewMode === "list") {
-    return (
-      <motion.div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className="group relative cursor-pointer w-full"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-      >
-        <div className="relative w-full bg-gray-900/30 rounded-lg overflow-hidden border border-gray-800 flex items-center gap-4 p-4 hover:bg-gray-900/50 transition">
-          {/* Logo */}
-          <div className="relative w-24 h-16 bg-black rounded shrink-0 flex items-center justify-center p-2 border border-gray-900">
-            <img
-              src={item.image || "/placeholder.svg"}
-              alt={item.title}
-              className="max-w-full max-h-full object-contain"
-              loading="lazy"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/placeholder.svg";
-              }}
-            />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white font-medium text-sm md:text-base line-clamp-1 mb-1">
-              {item.title}
-            </h3>
-            {item.description && (
-              <p className="text-gray-400 text-xs line-clamp-1">
-                {item.description}
-              </p>
-            )}
-            {item.genres && item.genres.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {item.genres.slice(0, 2).map((genre, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-0.5 bg-gray-800/50 text-gray-300 text-xs rounded"
-                  >
-                    {genre}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Action buttons */}
-          <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            animate={{
-              opacity: isHovered ? 1 : 0,
-              x: isHovered ? 0 : 10,
-            }}
-            transition={{ duration: 0.15 }}
-            className="flex items-center gap-2 shrink-0"
-          >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPlay?.();
-              }}
-              className="bg-white text-black px-3 py-1.5 rounded-md font-semibold text-sm hover:bg-white/90 transition flex items-center gap-2"
-            >
-              <Play size={14} fill="currentColor" />
-              <span className="hidden sm:inline">Play</span>
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onMoreInfo?.();
-              }}
-              className="bg-white/20 backdrop-blur-sm text-white px-3 py-1.5 rounded-md font-semibold text-sm hover:bg-white/30 transition flex items-center gap-2 border border-white/30"
-            >
-              <Info size={14} />
-              <span className="hidden sm:inline">Info</span>
-            </button>
-          </motion.div>
-        </div>
-      </motion.div>
-    );
-  }
-
-  // Grid view variants
   const getAspectRatio = () => {
     switch (viewMode) {
       case "grid-small":
@@ -150,7 +62,6 @@ export default function ChannelCard({
           getAspectRatio()
         )}
       >
-        {/* Logo Container */}
         <div
           className={cn(
             "absolute inset-0 flex items-center justify-center bg-black",
@@ -173,7 +84,6 @@ export default function ChannelCard({
           />
         </div>
 
-        {/* Overlay on hover */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: isHovered ? 1 : 0 }}
@@ -181,7 +91,6 @@ export default function ChannelCard({
           className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"
         />
 
-        {/* Action buttons on hover */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{
@@ -206,10 +115,7 @@ export default function ChannelCard({
                 : "px-3 py-1.5 text-sm"
             )}
           >
-            <Play
-              size={viewMode === "grid-small" ? 12 : 14}
-              fill="currentColor"
-            />
+            <Play size={viewMode === "grid-small" ? 12 : 14} fill="currentColor" />
             {viewMode !== "grid-small" && <span>Play</span>}
           </button>
           <button
@@ -229,7 +135,6 @@ export default function ChannelCard({
           </button>
         </motion.div>
 
-        {/* Channel title at bottom */}
         <div
           className={cn(
             "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent",
@@ -249,3 +154,4 @@ export default function ChannelCard({
     </motion.div>
   );
 }
+
