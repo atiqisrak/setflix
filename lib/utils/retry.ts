@@ -197,11 +197,10 @@ export class CircuitBreaker {
       this.lastFailureTime = now;
 
       // Check if we should open the circuit
-      if (
-        this.failures >= this.options.failureThreshold &&
-        this.state !== "open"
-      ) {
-        this.state = "open";
+      if (this.failures >= this.options.failureThreshold) {
+        if (this.state === "closed" || this.state === "half-open") {
+          this.state = "open";
+        }
       }
 
       throw error;
