@@ -17,7 +17,7 @@ export default function ProfileDropdown({
   onClose,
 }: ProfileDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,7 +50,11 @@ export default function ProfileDropdown({
           className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded shadow-lg z-50"
         >
           <div className="py-2">
-            {isAuthenticated ? (
+            {isLoading ? (
+              <div className="px-4 py-2 text-sm text-foreground/60 text-center">
+                Loading...
+              </div>
+            ) : isAuthenticated ? (
               <>
                 {user?.name && (
                   <div className="px-4 py-2 text-sm font-semibold text-foreground border-b border-border">
@@ -79,23 +83,26 @@ export default function ProfileDropdown({
                   Settings
                 </Link>
                 <div className="border-t border-border my-2"></div>
-                <button
+                <a
+                  href={`/api/auth/logout?returnTo=${encodeURIComponent(
+                    window.location.origin
+                  )}`}
                   onClick={onClose}
                   className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-foreground/10 transition w-full text-left"
                 >
                   <LogOut size={18} />
                   Sign Out
-                </button>
+                </a>
               </>
             ) : (
-              <Link
-                href="/login"
+              <a
+                href="/api/auth/login"
                 onClick={onClose}
                 className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-foreground/10 transition w-full text-left"
               >
                 <User size={18} />
                 Sign In
-              </Link>
+              </a>
             )}
           </div>
         </motion.div>

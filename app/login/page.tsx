@@ -1,28 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // TODO: Add authentication logic
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push("/");
-    }, 1000);
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -41,67 +23,20 @@ export default function LoginPage() {
             </h1>
             <p className="text-foreground/60 mb-8">Welcome back to Setflix</p>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full"
-                />
-              </div>
+            <div className="space-y-6">
+              <p className="text-foreground/80 text-sm">
+                Sign in with your Auth0 account to continue
+              </p>
 
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-foreground"
+              <a href="/api/auth/login">
+                <Button
+                  type="button"
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-base font-semibold"
                 >
-                  Password
-                </label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-input bg-input text-accent focus:ring-accent focus:ring-offset-0"
-                  />
-                  <span className="text-foreground/80">Remember me</span>
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-accent hover:text-accent/80 transition"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground h-12 text-base font-semibold"
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
+                  Sign In with Auth0
+                </Button>
+              </a>
+            </div>
 
             <div className="mt-6 text-center">
               <p className="text-foreground/60 text-sm">
