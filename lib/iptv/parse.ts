@@ -1,5 +1,6 @@
 import parser from "iptv-playlist-parser";
 import { IPTVChannel } from "./types";
+import { extractCountry } from "./country";
 
 /**
  * Parses M3U playlist content into IPTV channels
@@ -27,14 +28,22 @@ export function parseIPTVPlaylist(m3uContent: string): IPTVChannel[] {
         return `channel-${Math.abs(hash).toString(36)}-${idx}`;
       };
 
+      const group = item.group?.title;
+      const country = extractCountry({
+        group,
+        url: item.url,
+        name: cleanName,
+      });
+
       return {
         id: generateId(item.url, index),
         name: cleanName,
         url: item.url,
         tvgId: item.tvg?.id,
         tvgLogo: item.tvg?.logo,
-        group: item.group?.title,
+        group,
         quality,
+        country,
       };
     });
   } catch (error) {

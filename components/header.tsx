@@ -30,7 +30,6 @@ export default function Header() {
   }, []);
 
   const navItems = [
-    { label: "Home", href: "/" },
     { label: "All Channels", href: "/channels" },
     { label: "Browse", href: "/browse" },
     { label: "My List", href: "/my-list" },
@@ -50,12 +49,12 @@ export default function Header() {
           <Logo />
         </Link>
 
-        <nav className="hidden md:flex gap-6 text-foreground/80 text-xl">
+        <nav className="hidden md:flex gap-16 text-foreground/80 text-xl">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="hover:text-foreground transition duration-200
+              className="hover:text-accent transition duration-200
               hover:scale-110"
             >
               {item.label}

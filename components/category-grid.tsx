@@ -20,6 +20,7 @@ const CATEGORY_IMAGES: Record<string, string> = {
   Music: "/music-channel-live-broadcast.jpg",
   Documentary: "/documentary-nature-professional-cinema.jpg",
   Kids: "/entertainment-television-live-studio.jpg",
+  Browse: "/cinematic-netflix-style-hero-banner-dark-professio.jpg",
   Other: "/cinematic-netflix-style-hero-banner-dark-professio.jpg",
 };
 
@@ -42,7 +43,10 @@ export default function CategoryGrid({
       <div className="space-y-12 md:space-y-16">
         {categories.map((category, categoryIndex) => {
           const channels = categorizedContent[category] || [];
-          const imageUrl = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.Other;
+          const displayCategory =
+            category === "Undefined" ? "Browse" : category;
+          const imageUrl =
+            CATEGORY_IMAGES[displayCategory] || CATEGORY_IMAGES.Other;
 
           if (channels.length === 0) return null;
 
@@ -66,10 +70,11 @@ export default function CategoryGrid({
                 <div className="relative z-10 flex items-center justify-between p-4 md:p-6">
                   <div>
                     <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
-                      {category}
+                      {displayCategory}
                     </h3>
                     <p className="text-foreground/60">
-                      {channels.length} {channels.length === 1 ? "channel" : "channels"} available
+                      {channels.length}{" "}
+                      {channels.length === 1 ? "channel" : "channels"} available
                     </p>
                   </div>
                   <Link
@@ -96,4 +101,3 @@ export default function CategoryGrid({
     </section>
   );
 }
-

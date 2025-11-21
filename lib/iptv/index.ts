@@ -4,6 +4,7 @@ export * from "./parse";
 export * from "./category";
 export * from "./transform";
 export * from "./logo";
+export * from "./country";
 
 import { fetchIPTVPlaylist } from "./fetch";
 import { parseIPTVPlaylist } from "./parse";

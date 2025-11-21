@@ -84,7 +84,9 @@ export function detectCategory(channel: IPTVChannel): string {
     return "Kids";
   }
 
-  return channel.group || "Other";
+  const category = channel.group || "Other";
+  // Replace "Undefined" with "Browse"
+  return category === "Undefined" ? "Browse" : category;
 }
 
 /**
@@ -96,7 +98,11 @@ export function groupChannelsByCategory(
   const grouped: Record<string, IPTVChannel[]> = {};
 
   channels.forEach((channel) => {
-    const category = detectCategory(channel);
+    let category = detectCategory(channel);
+    // Ensure "Undefined" is converted to "Browse" (in case it slips through)
+    if (category === "Undefined") {
+      category = "Browse";
+    }
     if (!grouped[category]) {
       grouped[category] = [];
     }

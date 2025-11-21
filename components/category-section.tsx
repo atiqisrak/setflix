@@ -31,7 +31,8 @@ export default function CategorySection({
   onPlay,
   onMoreInfo,
 }: CategorySectionProps) {
-  const imageUrl = CATEGORY_IMAGES[category] || backgroundImage || CATEGORY_IMAGES.Other;
+  const imageUrl =
+    CATEGORY_IMAGES[category] || backgroundImage || CATEGORY_IMAGES.Other;
 
   return (
     <section className="relative w-full rounded-lg overflow-hidden mb-8 md:mb-12">
@@ -51,10 +52,11 @@ export default function CategorySection({
         <div className="flex items-center justify-between mb-6 md:mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
-              {category}
+              {category === "Undefined" ? "Browse" : category}
             </h2>
             <p className="text-white/80 text-sm md:text-base">
-              {channels.length} {channels.length === 1 ? "channel" : "channels"} available
+              {channels.length} {channels.length === 1 ? "channel" : "channels"}{" "}
+              available
             </p>
           </div>
           {channels.length > 4 && (
@@ -98,4 +100,3 @@ export default function CategorySection({
     </section>
   );
 }
-

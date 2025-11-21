@@ -11,6 +11,7 @@ import {
   SetflixContentItem,
   groupChannelsByCategory,
   transformIPTVToContent,
+  getUniqueCountries,
 } from "@/lib/iptv";
 import { SlidersHorizontal, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -25,6 +26,7 @@ type ViewMode = "grid-small" | "grid-medium" | "grid-large" | "list";
 
 export default function AllChannelsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [currentStreamUrl, setCurrentStreamUrl] = useState<string>("");
   const [currentStreamTitle, setCurrentStreamTitle] = useState<string>("");
@@ -56,6 +58,11 @@ export default function AllChannelsPage() {
 
   const { channels, isLoading, error } = useIPTVChannels();
   const { setSearchQuery } = useSearch();
+
+  // Get unique countries
+  const countries = useMemo(() => {
+    return getUniqueCountries(channels);
+  }, [channels]);
 
   // Group channels by category
   const groupedChannels = useMemo(() => {
@@ -91,13 +98,23 @@ export default function AllChannelsPage() {
     });
   }, []);
 
-  // Filter channels based on selected category and search
+  // Filter channels based on selected category, country, and search
   const filteredChannels = useMemo(() => {
     let filtered = channels;
 
     // Apply category filter
     if (selectedCategory !== "all") {
-      filtered = groupedChannels[selectedCategory] || [];
+      // Handle both "Undefined" and "Browse" for backward compatibility
+      const categoryKey =
+        selectedCategory === "Browse" ? "Browse" : selectedCategory;
+      filtered = groupedChannels[categoryKey] || [];
+    }
+
+    // Apply country filter
+    if (selectedCountry !== "all") {
+      filtered = filtered.filter(
+        (channel) => channel.country === selectedCountry
+      );
     }
 
     // Apply search filter
@@ -113,7 +130,13 @@ export default function AllChannelsPage() {
     return filtered.map((channel, index) =>
       transformIPTVToContent(channel, index)
     );
-  }, [channels, selectedCategory, groupedChannels, localSearchQuery]);
+  }, [
+    channels,
+    selectedCategory,
+    selectedCountry,
+    groupedChannels,
+    localSearchQuery,
+  ]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredChannels.length / ITEMS_PER_PAGE);
@@ -124,7 +147,7 @@ export default function AllChannelsPage() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, localSearchQuery]);
+  }, [selectedCategory, selectedCountry, localSearchQuery]);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -157,15 +180,17 @@ export default function AllChannelsPage() {
 
   const handleClearFilters = () => {
     setSelectedCategory("all");
+    setSelectedCountry("all");
     setLocalSearchQuery("");
   };
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedCategory !== "all") count++;
+    if (selectedCountry !== "all") count++;
     if (localSearchQuery.trim()) count++;
     return count;
-  }, [selectedCategory, localSearchQuery]);
+  }, [selectedCategory, selectedCountry, localSearchQuery]);
 
   return (
     <div className="min-h-screen bg-black">
@@ -252,6 +277,9 @@ export default function AllChannelsPage() {
             onCategorySelect={handleCategorySelect}
             channelsLength={channels.length}
             recentFilters={recentFilters}
+            countries={countries}
+            selectedCountry={selectedCountry}
+            onCountrySelect={setSelectedCountry}
           />
 
           {/* Results Count */}
@@ -262,7 +290,13 @@ export default function AllChannelsPage() {
                 {Math.min(endIndex, filteredChannels.length)} of{" "}
                 {filteredChannels.length} channel
                 {filteredChannels.length !== 1 ? "s" : ""}
-                {selectedCategory !== "all" && ` in ${selectedCategory}`}
+                {selectedCategory !== "all" &&
+                  ` in ${
+                    selectedCategory === "Undefined"
+                      ? "Browse"
+                      : selectedCategory
+                  }`}
+                {selectedCountry !== "all" && ` from ${selectedCountry}`}
                 {localSearchQuery && ` matching "${localSearchQuery}"`}
               </div>
             </div>

@@ -6,6 +6,7 @@ export interface IPTVChannel {
   tvgLogo?: string;
   group?: string;
   quality?: string;
+  country?: string;
 }
 
 export interface SetflixContentItem {
