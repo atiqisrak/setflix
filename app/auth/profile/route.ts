@@ -1,5 +1,3 @@
-export const runtime = "nodejs";
-
 import { NextRequest } from "next/server";
 import { Auth0Client } from "@auth0/nextjs-auth0/server";
 
