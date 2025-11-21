@@ -104,6 +104,7 @@ export default function ContentCarousel({
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const items =
     propItems ||
@@ -176,16 +177,20 @@ export default function ContentCarousel({
         <div
           ref={scrollRef}
           className="flex gap-3 md:gap-4 overflow-x-scroll scrollbar-hide pb-4 scroll-smooth"
-          style={{ 
+          style={{
             scrollBehavior: "smooth",
             alignItems: "flex-start",
           }}
         >
           {items.length > 0 ? (
-            items.map((item) => (
+            items.map((item, index) => (
               <ContentCard
                 key={item.id}
                 item={item}
+                index={index}
+                hoveredIndex={hoveredIndex}
+                onHover={() => setHoveredIndex(index)}
+                onLeave={() => setHoveredIndex(null)}
                 onPlay={onPlay ? () => onPlay(item) : undefined}
                 onMoreInfo={() => {
                   setSelectedItem(item);

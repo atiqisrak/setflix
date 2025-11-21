@@ -1,14 +1,18 @@
-import { IPTV_API_ROUTE } from "./constants";
+import { IPTV_PLAYLIST_URL } from "./constants";
 
 /**
- * Fetches M3U playlist from API route (proxied to avoid CORS)
+ * Fetches M3U playlist directly from IPTV source
+ * TanStack Query handles caching automatically
  */
 export async function fetchIPTVPlaylist(url?: string): Promise<string> {
   try {
-    const fetchUrl = url || IPTV_API_ROUTE;
+    const fetchUrl = url || IPTV_PLAYLIST_URL;
     
     const response = await fetch(fetchUrl, {
       cache: "no-store",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; Setflix/1.0)",
+      },
     });
 
     if (!response.ok) {

@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SearchProvider } from "@/contexts/search-context";
+import { QueryProvider } from "@/lib/providers/query-provider";
 import "./globals.css";
 
 const bebasNeue = Bebas_Neue({
@@ -50,7 +51,9 @@ export default function RootLayout({
         className={`${bebasNeue.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        <SearchProvider>{children}</SearchProvider>
+        <QueryProvider>
+          <SearchProvider>{children}</SearchProvider>
+        </QueryProvider>
         <Analytics />
       </body>
     </html>
