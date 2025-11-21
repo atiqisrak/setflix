@@ -99,5 +99,6 @@ export const STORAGE_KEYS = {
   RECENT_FILTERS: "recent-filters",
   SESSION_FILTERS: "session-filters",
   SESSION_VIEW_MODE: "session-view-mode",
+  MY_LIST: "setflix-my-list",
 } as const;
 

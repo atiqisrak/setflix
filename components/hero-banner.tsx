@@ -43,7 +43,6 @@ interface HeroBannerProps {
 }
 
 export default function HeroBanner({ onPlay, onMoreInfo }: HeroBannerProps) {
-  const [isMuted, setIsMuted] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -127,24 +126,6 @@ export default function HeroBanner({ onPlay, onMoreInfo }: HeroBannerProps) {
           </Button>
         </div>
       </div>
-
-      <button
-        onClick={() => setIsMuted(!isMuted)}
-        className="absolute bottom-4 right-4 md:bottom-8 md:right-8 bg-black/70 hover:bg-black/90 p-3 rounded-full transition z-20"
-        aria-label="Toggle mute"
-      >
-        <svg
-          className="w-5 h-5 md:w-6 md:h-6 text-foreground"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          {isMuted ? (
-            <path d="M8.707 7.293a1 1 0 00-1.414 1.414l.707.707H7a4 4 0 000 8h4a1 1 0 100-2H7a2 2 0 010-4h1a1 1 0 00.707-.293l2-2a1 1 0 00-1.414-1.414z" />
-          ) : (
-            <path d="M9 4a1 1 0 012 0v12a1 1 0 11-2 0V4zm0 0a4 4 0 100 8 4 4 0 000-8z" />
-          )}
-        </svg>
-      </button>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
         {HERO_CONTENT.map((_, index) => (

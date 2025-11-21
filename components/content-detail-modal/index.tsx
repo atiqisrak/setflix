@@ -6,6 +6,8 @@ import { modalVariants, backdropVariants } from "@/lib/animations";
 import HeroSection from "./components/hero-section";
 import ModalTabs from "./components/modal-tabs";
 import TabContent from "./components/tab-content";
+import { useMyList } from "@/hooks/use-my-list";
+import { SetflixContentItem } from "@/lib/iptv";
 
 interface ContentDetailModalItem {
   id: number;
@@ -38,10 +40,29 @@ export default function ContentDetailModal({
   item,
 }: ContentDetailModalProps) {
   const [isLiked, setIsLiked] = useState(false);
-  const [isInList, setIsInList] = useState(false);
+  const { isInList, toggleListItem } = useMyList();
   const [activeTab, setActiveTab] = useState<
     "overview" | "episodes" | "details"
   >("overview");
+
+  const itemInList = isInList(item.id);
+
+  const handleToggleList = () => {
+    const listItem: SetflixContentItem = {
+      id: item.id,
+      title: item.title,
+      image: item.image,
+      url: item.url,
+      rating: item.rating,
+      year: item.year,
+      duration: item.duration,
+      genres: item.genres,
+      description: item.description,
+      match: item.match,
+      maturity: item.maturity,
+    };
+    toggleListItem(listItem);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -59,7 +80,7 @@ export default function ContentDetailModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] overflow-y-auto">
+        <div className="fixed inset-0 z-100 overflow-y-auto">
           <motion.div
             variants={backdropVariants}
             initial="initial"
@@ -79,11 +100,11 @@ export default function ContentDetailModal({
             <HeroSection
               item={item}
               isLiked={isLiked}
-              isInList={isInList}
+              isInList={itemInList}
               onClose={onClose}
               onPlay={onPlay ? () => onPlay(item) : undefined}
               onToggleLike={() => setIsLiked(!isLiked)}
-              onToggleList={() => setIsInList(!isInList)}
+              onToggleList={handleToggleList}
             />
 
             <div className="bg-background px-8 md:px-12 py-8">
