@@ -25,13 +25,13 @@ export default function ProviderSelector({
     selectProvider,
     isLoading,
   } = useProviderContext();
-  
+
   const [isOpen, setIsOpen] = useState(false);
 
   const getStatusColor = (status?: ProviderHealthStatus) => {
     switch (status) {
       case "online":
-        return "bg-green-500";
+        return "bg-red-500";
       case "degraded":
         return "bg-yellow-500";
       case "offline":
@@ -58,16 +58,13 @@ export default function ProviderSelector({
     }
   };
 
-  const groupedProviders = providers.reduce(
-    (acc, provider) => {
-      if (!acc[provider.type]) {
-        acc[provider.type] = [];
-      }
-      acc[provider.type].push(provider);
-      return acc;
-    },
-    {} as Record<string, ProviderConfig[]>
-  );
+  const groupedProviders = providers.reduce((acc, provider) => {
+    if (!acc[provider.type]) {
+      acc[provider.type] = [];
+    }
+    acc[provider.type].push(provider);
+    return acc;
+  }, {} as Record<string, ProviderConfig[]>);
 
   const handleSelect = async (providerId: string) => {
     await selectProvider(providerId);
@@ -86,9 +83,7 @@ export default function ProviderSelector({
       >
         <Radio size={16} />
         {showLabel && (
-          <span className="hidden sm:inline">
-            {currentProvider.name}
-          </span>
+          <span className="hidden sm:inline">{currentProvider.name}</span>
         )}
         <ChevronDown
           size={16}
@@ -116,52 +111,57 @@ export default function ProviderSelector({
                 <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase mb-2">
                   Select Provider
                 </div>
-                
-                {Object.entries(groupedProviders).map(([type, typeProviders]) => (
-                  <div key={type} className="mb-4">
-                    <div className="px-3 py-1.5 text-xs font-medium text-gray-500 capitalize">
-                      {type.replace("-", " ")}
-                    </div>
-                    {typeProviders.slice(0, 10).map((provider) => {
-                      const providerHealth = health[provider.id];
-                      const isSelected = currentProvider?.id === provider.id;
-                      
-                      return (
-                        <button
-                          key={provider.id}
-                          onClick={() => handleSelect(provider.id)}
-                          className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 transition text-left",
-                            isSelected && "bg-gray-800"
-                          )}
-                        >
-                          <div className="flex-shrink-0">
-                            <div
-                              className={cn(
-                                "w-2 h-2 rounded-full",
-                                getStatusColor(providerHealth?.status)
-                              )}
-                              title={getStatusText(providerHealth?.status)}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm text-white truncate">
-                              {provider.name}
-                            </div>
-                            {providerHealth?.channelCount && (
-                              <div className="text-xs text-gray-500">
-                                {providerHealth.channelCount} channels
-                              </div>
+
+                {Object.entries(groupedProviders).map(
+                  ([type, typeProviders]) => (
+                    <div key={type} className="mb-4">
+                      <div className="px-3 py-1.5 text-xs font-medium text-gray-500 capitalize">
+                        {type.replace("-", " ")}
+                      </div>
+                      {typeProviders.slice(0, 10).map((provider) => {
+                        const providerHealth = health[provider.id];
+                        const isSelected = currentProvider?.id === provider.id;
+
+                        return (
+                          <button
+                            key={provider.id}
+                            onClick={() => handleSelect(provider.id)}
+                            className={cn(
+                              "w-full flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 transition text-left",
+                              isSelected && "bg-gray-800"
                             )}
-                          </div>
-                          {isSelected && (
-                            <Check size={16} className="text-green-500 flex-shrink-0" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
+                          >
+                            <div className="flex-shrink-0">
+                              <div
+                                className={cn(
+                                  "w-2 h-2 rounded-full",
+                                  getStatusColor(providerHealth?.status)
+                                )}
+                                title={getStatusText(providerHealth?.status)}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm text-white truncate">
+                                {provider.name}
+                              </div>
+                              {providerHealth?.channelCount && (
+                                <div className="text-xs text-gray-500">
+                                  {providerHealth.channelCount} channels
+                                </div>
+                              )}
+                            </div>
+                            {isSelected && (
+                              <Check
+                                size={16}
+                                className="text-green-500 flex-shrink-0"
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )
+                )}
               </div>
             </motion.div>
           </>
@@ -170,4 +170,3 @@ export default function ProviderSelector({
     </div>
   );
 }
-

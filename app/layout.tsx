@@ -4,6 +4,7 @@ import { Bebas_Neue } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SearchProvider } from "@/contexts/search-context";
 import { ProviderProvider } from "@/contexts/provider-context";
+import { AuthProvider } from "@/contexts/auth-context";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import "./globals.css";
 
@@ -53,9 +54,11 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <QueryProvider>
-          <ProviderProvider>
-            <SearchProvider>{children}</SearchProvider>
-          </ProviderProvider>
+          <AuthProvider>
+            <ProviderProvider>
+              <SearchProvider>{children}</SearchProvider>
+            </ProviderProvider>
+          </AuthProvider>
         </QueryProvider>
         <Analytics />
       </body>

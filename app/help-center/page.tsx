@@ -143,10 +143,10 @@ export default function HelpCenterPage() {
                 <p className="text-foreground/80">
                   Call us at{" "}
                   <a
-                    href="tel:+1-800-SETFLIX"
+                    href="tel:+880-1755-100000"
                     className="text-accent hover:underline"
                   >
-                    1-800-SETFLIX
+                    880-1755-100000
                   </a>{" "}
                   Monday through Friday, 9 AM - 6 PM EST.
                 </p>
@@ -166,4 +166,3 @@ export default function HelpCenterPage() {
     </PageLayout>
   );
 }
-

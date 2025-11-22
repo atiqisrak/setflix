@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Settings, User, LogOut, ChevronUp } from "lucide-react";
+import { useRef, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { Settings, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeVariants } from "@/lib/animations";
+import { useAuth } from "@/contexts/auth-context";
 
 interface ProfileDropdownProps {
   isOpen: boolean;
@@ -16,8 +18,9 @@ export default function ProfileDropdown({
   onClose,
 }: ProfileDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const isAuthenticated = false;
-  const isLoading = false;
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,18 +76,21 @@ export default function ProfileDropdown({
                   Settings
                 </Link>
                 <div className="border-t border-border my-2"></div>
-                <Link
-                  href="/login"
-                  onClick={onClose}
+                <button
+                  onClick={async () => {
+                    onClose();
+                    await logout();
+                    router.push("/");
+                  }}
                   className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-foreground/10 transition w-full text-left"
                 >
                   <LogOut size={18} />
                   Sign Out
-                </Link>
+                </button>
               </>
             ) : (
               <Link
-                href="/login"
+                href={`/login${pathname && pathname !== "/" ? `?callback=${encodeURIComponent(pathname)}` : ""}`}
                 onClick={onClose}
                 className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-foreground/10 transition w-full text-left"
               >

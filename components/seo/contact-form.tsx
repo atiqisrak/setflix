@@ -82,10 +82,10 @@ export default function ContactForm({ className = "" }: ContactFormProps) {
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Phone</h3>
                   <a
-                    href="tel:+1-800-SETFLIX"
+                    href="tel:+880-1755-100000"
                     className="text-foreground/70 hover:text-accent transition-colors"
                   >
-                    1-800-SETFLIX
+                    880-1755-100000
                   </a>
                 </div>
               </div>
@@ -191,7 +191,7 @@ export default function ContactForm({ className = "" }: ContactFormProps) {
               </div>
 
               {submitted && (
-                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-500">
+                <div className="p-4 bg-red-500/10 border border-green-500/20 rounded-lg text-green-500">
                   Thank you! Your message has been sent successfully.
                 </div>
               )}

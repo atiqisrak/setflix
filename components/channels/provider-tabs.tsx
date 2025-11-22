@@ -19,8 +19,14 @@ export default function ProviderTabs({
   onProviderSelect,
   className,
 }: ProviderTabsProps) {
-  const { providers, health, isLoading: providersLoading } = useProviderContext();
-  const [selectedType, setSelectedType] = useState<"main" | "regional" | "specialty" | "third-party" | "all">("main");
+  const {
+    providers,
+    health,
+    isLoading: providersLoading,
+  } = useProviderContext();
+  const [selectedType, setSelectedType] = useState<
+    "main" | "regional" | "specialty" | "third-party" | "all"
+  >("main");
   const [showAll, setShowAll] = useState(false);
 
   // Group providers by type
@@ -58,7 +64,7 @@ export default function ProviderTabs({
   const getStatusColor = (status?: ProviderHealthStatus) => {
     switch (status) {
       case "online":
-        return "bg-green-500";
+        return "bg-red-500";
       case "degraded":
         return "bg-yellow-500";
       case "offline":
@@ -91,9 +97,21 @@ export default function ProviderTabs({
 
   const types = [
     { id: "main", label: "Main", count: groupedProviders.main.length },
-    { id: "regional", label: "Regional", count: groupedProviders.regional.length },
-    { id: "specialty", label: "Specialty", count: groupedProviders.specialty.length },
-    { id: "third-party", label: "Third-party", count: groupedProviders["third-party"].length },
+    {
+      id: "regional",
+      label: "Regional",
+      count: groupedProviders.regional.length,
+    },
+    {
+      id: "specialty",
+      label: "Specialty",
+      count: groupedProviders.specialty.length,
+    },
+    {
+      id: "third-party",
+      label: "Third-party",
+      count: groupedProviders["third-party"].length,
+    },
     { id: "all", label: "All", count: providers.length },
   ];
 
@@ -156,7 +174,9 @@ export default function ProviderTabs({
                   ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20"
                   : "bg-gray-900/50 text-gray-300 hover:bg-gray-900 border-gray-800 hover:border-gray-700"
               )}
-              title={`${provider.name} - ${channelCount || "?"} channels - ${getStatusText(status)}`}
+              title={`${provider.name} - ${
+                channelCount || "?"
+              } channels - ${getStatusText(status)}`}
             >
               {/* Status Indicator */}
               <div className="flex items-center gap-2">
@@ -166,7 +186,13 @@ export default function ProviderTabs({
                     getStatusColor(status)
                   )}
                 />
-                <Radio size={16} className={cn("flex-shrink-0", isSelected && "text-accent-foreground")} />
+                <Radio
+                  size={16}
+                  className={cn(
+                    "flex-shrink-0",
+                    isSelected && "text-accent-foreground"
+                  )}
+                />
               </div>
 
               {/* Provider Name */}
@@ -177,9 +203,7 @@ export default function ProviderTabs({
                 <span
                   className={cn(
                     "px-2 py-0.5 rounded text-xs font-medium",
-                    isSelected
-                      ? "bg-accent-foreground/20"
-                      : "bg-gray-800"
+                    isSelected ? "bg-accent-foreground/20" : "bg-gray-800"
                   )}
                 >
                   {channelCount}
@@ -191,7 +215,7 @@ export default function ProviderTabs({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5"
+                  className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5"
                 >
                   <Check size={12} className="text-white" />
                 </motion.div>
@@ -216,7 +240,8 @@ export default function ProviderTabs({
 
         {/* Show More/Less Toggle */}
         {((selectedType === "all" && providers.length > 12) ||
-          (selectedType !== "all" && (groupedProviders[selectedType]?.length || 0) > 12)) && (
+          (selectedType !== "all" &&
+            (groupedProviders[selectedType]?.length || 0) > 12)) && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="flex items-center gap-1 px-4 py-2.5 rounded-lg font-medium text-sm bg-gray-900/50 text-gray-300 hover:bg-gray-900 border border-gray-800 hover:border-gray-700 transition whitespace-nowrap"
@@ -244,7 +269,9 @@ export default function ProviderTabs({
           className="mt-4 p-3 bg-gray-900/50 border border-gray-800 rounded-lg"
         >
           {(() => {
-            const selectedProvider = providers.find((p) => p.id === selectedProviderId);
+            const selectedProvider = providers.find(
+              (p) => p.id === selectedProviderId
+            );
             const selectedHealth = health[selectedProviderId];
             if (!selectedProvider) return null;
 
@@ -286,4 +313,3 @@ export default function ProviderTabs({
     </div>
   );
 }
-

@@ -100,5 +100,7 @@ export const STORAGE_KEYS = {
   SESSION_FILTERS: "session-filters",
   SESSION_VIEW_MODE: "session-view-mode",
   MY_LIST: "setflix-my-list",
+  TOKEN: "setflix-token",
+  REFRESH_TOKEN: "setflix-refresh-token",
 } as const;
 

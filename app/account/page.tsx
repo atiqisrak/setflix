@@ -7,18 +7,23 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { User, Mail, LogOut, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function AccountPage() {
   const router = useRouter();
-  const isAuthenticated = false;
-  const isLoading = false;
-  const user = null;
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+      // Redirect to login with callback URL to return to account page
+      router.push("/login?callback=/account");
     }
   }, [isAuthenticated, isLoading, router]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
 
   if (isLoading) {
     return (
@@ -52,11 +57,21 @@ export default function AccountPage() {
           <div className="bg-card rounded-lg p-6 md:p-8 mb-8 border border-border">
             <div className="flex items-center gap-6 mb-8">
               <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center">
-                <User size={40} className="text-accent-foreground" />
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name || user.email}
+                    className="w-20 h-20 rounded-full object-cover"
+                  />
+                ) : (
+                  <User size={40} className="text-accent-foreground" />
+                )}
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-foreground">User</h2>
-                <p className="text-foreground/60"></p>
+                <h2 className="text-2xl font-bold text-foreground">
+                  {user?.name || "User"}
+                </h2>
+                <p className="text-foreground/60">{user?.email}</p>
               </div>
             </div>
 
@@ -66,7 +81,7 @@ export default function AccountPage() {
                   <Mail size={18} />
                   Email Address
                 </span>
-                <span className="text-foreground">N/A</span>
+                <span className="text-foreground">{user?.email || "N/A"}</span>
               </div>
 
               <div className="flex items-center justify-between py-3 border-b border-border/50">
@@ -86,18 +101,28 @@ export default function AccountPage() {
 
           {/* Actions */}
           <div className="space-y-3">
-            <Button className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground px-6 py-3 rounded transition">
-              Edit Profile
-            </Button>
-            <Button className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground px-6 py-3 rounded transition">
-              Change Password
-            </Button>
-            <Link href="/login" className="block">
-              <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3 rounded transition flex items-center justify-center gap-2">
-                <LogOut size={18} />
-                Sign Out
+            <Link href="/account/edit" className="block">
+              <Button className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground px-6 py-3 rounded transition">
+                Edit Profile
               </Button>
             </Link>
+            <Link href="/account/password" className="block">
+              <Button className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground px-6 py-3 rounded transition">
+                Change Password
+              </Button>
+            </Link>
+            <Link href="/account/settings" className="block">
+              <Button className="w-full bg-foreground/10 hover:bg-foreground/20 text-foreground px-6 py-3 rounded transition">
+                Settings
+              </Button>
+            </Link>
+            <Button
+              onClick={handleLogout}
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3 rounded transition flex items-center justify-center gap-2"
+            >
+              <LogOut size={18} />
+              Sign Out
+            </Button>
           </div>
         </div>
       </main>

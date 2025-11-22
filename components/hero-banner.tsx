@@ -47,7 +47,7 @@ export default function HeroBanner({ onPlay, onMoreInfo }: HeroBannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const currentContent = HERO_CONTENT[currentIndex];
-  
+
   const { photo: currentPhoto, loading: photoLoading } = usePexelsMedia({
     query: currentContent.query,
     type: "photo",

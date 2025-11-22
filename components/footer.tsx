@@ -101,7 +101,7 @@ export default function Footer() {
             {/* Contact Info */}
             <div className="space-y-3 mb-6">
               <a
-                href="tel:+1-800-SETFLIX"
+                href="tel:+880-1755-100000"
                 className="flex items-center gap-3 text-foreground/70 hover:text-accent transition-colors group text-sm md:text-base"
               >
                 <div className="w-10 h-10 rounded-lg bg-card border border-border/50 flex items-center justify-center group-hover:border-accent/50 group-hover:bg-accent/10 transition-all">
@@ -110,7 +110,7 @@ export default function Footer() {
                     className="text-foreground/60 group-hover:text-accent"
                   />
                 </div>
-                <span className="font-medium">1-800-SETFLIX</span>
+                <span className="font-medium">880-1755-100000</span>
               </a>
               <a
                 href="mailto:support@setflix.com"

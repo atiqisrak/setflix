@@ -84,7 +84,7 @@ export function generateOrganizationStructuredData() {
     logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://setflix.com"}/logo-setflix.svg`,
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+1-800-SETFLIX",
+      telephone: "+880-1755-100000",
       contactType: "customer service",
       email: "support@setflix.com",
     },
