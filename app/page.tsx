@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import HeroBanner from "@/components/hero-banner";
 import FeaturedCategoriesShowcase from "@/components/featured-categories-showcase";
@@ -12,6 +13,8 @@ import Footer from "@/components/footer";
 import ContentDetailModal from "@/components/content-detail-modal";
 import VideoPlayer from "@/components/video-player";
 import { useIPTVChannels } from "@/hooks/use-iptv-channels";
+import { useHomepageSettings } from "@/hooks/use-homepage-settings";
+import { useAuth } from "@/contexts/auth-context";
 import {
   SetflixContentItem,
   groupChannelsByCategory,
@@ -19,6 +22,9 @@ import {
 } from "@/lib/iptv";
 
 export default function Home() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { settings } = useHomepageSettings();
   const [selectedContent, setSelectedContent] =
     useState<SetflixContentItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,6 +44,11 @@ export default function Home() {
       | SetflixContentItem
       | { url?: string; title: string; [key: string]: any }
   ) => {
+    if (!isAuthenticated) {
+      const currentPath = window.location.pathname;
+      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
+      return;
+    }
     if (item?.url) {
       setCurrentStreamUrl(item.url);
       setCurrentStreamTitle(item.title);
@@ -82,8 +93,17 @@ export default function Home() {
     return result;
   }, [groupedChannels]);
 
+  // Get theme-based styling
+  const themeClasses = settings?.theme === "sports"
+    ? "bg-gradient-to-b from-green-900/20 to-background"
+    : settings?.theme === "news"
+    ? "bg-gradient-to-b from-blue-900/20 to-background"
+    : settings?.theme === "entertainment"
+    ? "bg-gradient-to-b from-purple-900/20 to-background"
+    : "";
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${themeClasses}`}>
       <Header />
       <HeroBanner
         onPlay={() => handlePlay()}

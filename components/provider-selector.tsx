@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, Check, Globe, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProviderContext } from "@/contexts/provider-context";
+import { useAuth } from "@/contexts/auth-context";
 import { ProviderConfig } from "@/lib/iptv/provider-config";
 import { ProviderHealthStatus } from "@/lib/iptv/provider-health";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ export default function ProviderSelector({
   className,
   showLabel = true,
 }: ProviderSelectorProps) {
+  const { isAuthenticated, isPremium, isAdmin } = useAuth();
   const {
     currentProvider,
     providers,
@@ -27,6 +29,18 @@ export default function ProviderSelector({
   } = useProviderContext();
 
   const [isOpen, setIsOpen] = useState(false);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Free users can only see their current provider
+  const canAccessMultipleProviders = isPremium || isAdmin;
+  const displayProviders = canAccessMultipleProviders 
+    ? providers 
+    : currentProvider 
+      ? [currentProvider] 
+      : [];
 
   const getStatusColor = (status?: ProviderHealthStatus) => {
     switch (status) {
@@ -58,7 +72,7 @@ export default function ProviderSelector({
     }
   };
 
-  const groupedProviders = providers.reduce((acc, provider) => {
+  const groupedProviders = displayProviders.reduce((acc, provider) => {
     if (!acc[provider.type]) {
       acc[provider.type] = [];
     }

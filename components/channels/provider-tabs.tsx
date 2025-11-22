@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Radio, Check, ChevronDown, Globe } from "lucide-react";
+import { Radio, Check, ChevronDown, Globe, Crown } from "lucide-react";
 import { useProviderContext } from "@/contexts/provider-context";
+import { useAuth } from "@/contexts/auth-context";
 import { ProviderConfig } from "@/lib/iptv/provider-config";
 import { ProviderHealthStatus } from "@/lib/iptv/provider-health";
 import { cn } from "@/lib/utils";
@@ -19,15 +21,29 @@ export default function ProviderTabs({
   onProviderSelect,
   className,
 }: ProviderTabsProps) {
+  const { isAuthenticated, isPremium, isAdmin } = useAuth();
   const {
     providers,
     health,
     isLoading: providersLoading,
+    currentProvider,
   } = useProviderContext();
   const [selectedType, setSelectedType] = useState<
     "main" | "regional" | "specialty" | "third-party" | "all"
   >("main");
   const [showAll, setShowAll] = useState(false);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Free users can only see their current provider
+  const canAccessMultipleProviders = isPremium || isAdmin;
+  const displayProvidersList = canAccessMultipleProviders 
+    ? providers 
+    : currentProvider 
+      ? [currentProvider] 
+      : [];
 
   // Group providers by type
   const groupedProviders = useMemo(() => {
@@ -38,28 +54,31 @@ export default function ProviderTabs({
       "third-party": [],
     };
 
-    providers.forEach((provider) => {
+    displayProvidersList.forEach((provider) => {
       if (grouped[provider.type]) {
         grouped[provider.type].push(provider);
       }
     });
 
     return grouped;
-  }, [providers]);
+  }, [displayProvidersList]);
 
   // Get providers to display based on selected type
   const displayProviders = useMemo(() => {
+    if (!canAccessMultipleProviders) {
+      return displayProvidersList;
+    }
     if (selectedType === "all") {
-      return providers.slice(0, showAll ? providers.length : 12);
+      return displayProvidersList.slice(0, showAll ? displayProvidersList.length : 12);
     }
     const typeProviders = groupedProviders[selectedType] || [];
     return showAll ? typeProviders : typeProviders.slice(0, 12);
-  }, [selectedType, groupedProviders, providers, showAll]);
+  }, [selectedType, groupedProviders, displayProvidersList, showAll, canAccessMultipleProviders]);
 
   // Main providers (top 9)
   const mainProviders = useMemo(() => {
-    return providers.filter((p) => p.type === "main").slice(0, 9);
-  }, [providers]);
+    return displayProvidersList.filter((p) => p.type === "main").slice(0, 9);
+  }, [displayProvidersList]);
 
   const getStatusColor = (status?: ProviderHealthStatus) => {
     switch (status) {
@@ -112,18 +131,19 @@ export default function ProviderTabs({
       label: "Third-party",
       count: groupedProviders["third-party"].length,
     },
-    { id: "all", label: "All", count: providers.length },
+    { id: "all", label: "All", count: displayProvidersList.length },
   ];
 
-  if (providersLoading || !providers.length) {
+  if (providersLoading || !displayProvidersList.length) {
     return null;
   }
 
   return (
     <div className={cn("w-full", className)}>
-      {/* Provider Type Tabs */}
-      <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto">
-        {types.map((type) => (
+      {/* Provider Type Tabs - Only show for premium/admin */}
+      {canAccessMultipleProviders && (
+        <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto">
+          {types.map((type) => (
           <button
             key={type.id}
             onClick={() => {
@@ -152,7 +172,18 @@ export default function ProviderTabs({
             )}
           </button>
         ))}
-      </div>
+        </div>
+      )}
+
+      {/* Free User Notice */}
+      {!canAccessMultipleProviders && (
+        <div className="mb-4 p-3 bg-accent/10 border border-accent/30 rounded-lg">
+          <p className="text-sm text-foreground/80">
+            <Crown size={16} className="inline mr-2 text-accent" />
+            You're on the Free plan. <Link href="/account" className="text-accent hover:underline">Upgrade to Premium</Link> to access all providers.
+          </p>
+        </div>
+      )}
 
       {/* Provider Tabs */}
       <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
@@ -238,10 +269,11 @@ export default function ProviderTabs({
           );
         })}
 
-        {/* Show More/Less Toggle */}
-        {((selectedType === "all" && providers.length > 12) ||
-          (selectedType !== "all" &&
-            (groupedProviders[selectedType]?.length || 0) > 12)) && (
+        {/* Show More/Less Toggle - Only for premium/admin */}
+        {canAccessMultipleProviders && 
+          ((selectedType === "all" && displayProvidersList.length > 12) ||
+            (selectedType !== "all" &&
+              (groupedProviders[selectedType]?.length || 0) > 12)) && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="flex items-center gap-1 px-4 py-2.5 rounded-lg font-medium text-sm bg-gray-900/50 text-gray-300 hover:bg-gray-900 border border-gray-800 hover:border-gray-700 transition whitespace-nowrap"
@@ -269,7 +301,7 @@ export default function ProviderTabs({
           className="mt-4 p-3 bg-gray-900/50 border border-gray-800 rounded-lg"
         >
           {(() => {
-            const selectedProvider = providers.find(
+            const selectedProvider = displayProvidersList.find(
               (p) => p.id === selectedProviderId
             );
             const selectedHealth = health[selectedProviderId];

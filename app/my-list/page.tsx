@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Heart, Trash2, Play, Info } from "lucide-react";
 import { useMyList } from "@/hooks/use-my-list";
+import { useAuth } from "@/contexts/auth-context";
 import ContentDetailModal from "@/components/content-detail-modal";
 import VideoPlayer from "@/components/video-player";
 import { SetflixContentItem } from "@/lib/iptv";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function MyListPage() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { listItems, isLoading, removeFromList } = useMyList();
   const [selectedContent, setSelectedContent] =
     useState<SetflixContentItem | null>(null);
@@ -20,13 +24,38 @@ export default function MyListPage() {
   const [currentStreamTitle, setCurrentStreamTitle] = useState<string>("");
   const [hoveredItemId, setHoveredItemId] = useState<number | null>(null);
 
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push(`/login?callback=${encodeURIComponent("/my-list")}`);
+    }
+  }, [isAuthenticated, authLoading, router]);
+
   const handlePlay = (item: SetflixContentItem) => {
+    if (!isAuthenticated) {
+      const currentPath = window.location.pathname;
+      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
+      return;
+    }
     if (item.url) {
       setCurrentStreamUrl(item.url);
       setCurrentStreamTitle(item.title);
       setIsVideoPlayerOpen(true);
     }
   };
+
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-24 px-4 md:px-8 py-12">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-foreground/60">Loading...</div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleMoreInfo = (item: SetflixContentItem) => {
     setSelectedContent(item);

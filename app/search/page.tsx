@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import AnimatedContentCard from "@/components/animated-content-card";
@@ -9,6 +9,7 @@ import VideoPlayer from "@/components/video-player";
 import ContentDetailModal from "@/components/content-detail-modal";
 import { Search, X } from "lucide-react";
 import { useSearch } from "@/contexts/search-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   SetflixContentItem,
   groupChannelsByCategory,
@@ -17,6 +18,8 @@ import {
 import { useIPTVChannels } from "@/hooks/use-iptv-channels";
 
 function SearchContent() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") || "";
   const categoryParam = searchParams.get("category") || "";
@@ -107,6 +110,11 @@ function SearchContent() {
       | SetflixContentItem
       | { url?: string; title: string; [key: string]: any }
   ) => {
+    if (!isAuthenticated) {
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
+      return;
+    }
     if (item.url) {
       setCurrentStreamUrl(item.url);
       setCurrentStreamTitle(item.title);

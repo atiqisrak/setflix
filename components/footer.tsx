@@ -13,8 +13,9 @@ import {
   Linkedin,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/auth-context";
 
 const footerLinks = [
   {
@@ -64,7 +65,22 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const { isAuthenticated } = useAuth();
   const [selectedLanguage, setSelectedLanguage] = useState("English");
+
+  const footerLinksWithAuth = useMemo(() => {
+    return footerLinks.map((section) => {
+      if (section.title === "Account") {
+        return {
+          ...section,
+          links: section.links.filter(
+            (link) => link.href !== "/my-list" || isAuthenticated
+          ),
+        };
+      }
+      return section;
+    });
+  }, [isAuthenticated]);
 
   return (
     <footer className="relative bg-gradient-to-b from-background via-background/95 to-background border-t border-border/50 mt-20 overflow-hidden">
@@ -155,7 +171,7 @@ export default function Footer() {
           {/* Links Grid */}
           <div className="lg:col-span-8">
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-              {footerLinks.map((section, sectionIndex) => (
+              {footerLinksWithAuth.map((section, sectionIndex) => (
                 <motion.div
                   key={section.title}
                   initial={{ opacity: 0, y: 20 }}

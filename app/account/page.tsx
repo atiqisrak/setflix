@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
-import { User, Mail, LogOut, Settings } from "lucide-react";
+import { User, Mail, LogOut, Settings, Crown, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, isPremium, isAdmin } = useAuth();
+  const [showComparison, setShowComparison] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -42,6 +44,27 @@ export default function AccountPage() {
   if (!isAuthenticated) {
     return null;
   }
+
+  const userRole = user?.role || 'free_subscriber';
+  const isFreeUser = userRole === 'free_subscriber';
+  const planName = isAdmin ? 'Admin' : isPremium ? 'Premium' : 'Free';
+  const planColor = isAdmin ? 'text-purple-500' : isPremium ? 'text-accent' : 'text-foreground/60';
+
+  const freeBenefits = [
+    'Access to 1 provider',
+    'Basic channel selection',
+    'Standard streaming quality',
+    'Limited features',
+  ];
+
+  const premiumBenefits = [
+    'Access to all providers',
+    'Unlimited channels',
+    'HD & 4K streaming quality',
+    'Priority support',
+    'Advanced features',
+    'Ad-free experience',
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,15 +112,150 @@ export default function AccountPage() {
                   <Settings size={18} />
                   Subscription Plan
                 </span>
-                <span className="text-accent font-semibold">Premium</span>
+                <div className="flex items-center gap-2">
+                  {isPremium && <Crown size={18} className="text-accent" />}
+                  <span className={`font-semibold ${planColor}`}>{planName}</span>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between py-3">
-                <span className="text-foreground/80">Renewal Date</span>
-                <span className="text-foreground">Dec 20, 2025</span>
+              {/* Current Plan Benefits */}
+              <div className="py-3 border-b border-border/50">
+                <span className="text-foreground/80 block mb-3">What You're Getting:</span>
+                <ul className="space-y-2">
+                  {(isPremium ? premiumBenefits : freeBenefits).map((benefit, index) => (
+                    <li key={index} className="flex items-center gap-2 text-foreground/70 text-sm">
+                      <Check size={16} className="text-accent flex-shrink-0" />
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
+
+              {isFreeUser && (
+                <div className="pt-4">
+                  <Button
+                    onClick={() => setShowComparison(!showComparison)}
+                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground flex items-center justify-center gap-2"
+                  >
+                    {showComparison ? (
+                      <>
+                        <ChevronUp size={18} />
+                        Hide Premium Comparison
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={18} />
+                        View Premium Benefits
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Premium Comparison Table */}
+          {isFreeUser && (
+            <AnimatePresence>
+              {showComparison && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-card rounded-lg p-6 md:p-8 mb-8 border border-border overflow-hidden"
+                >
+                  <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                    <Crown size={24} className="text-accent" />
+                    Premium vs Free Comparison
+                  </h3>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border/50">
+                          <th className="text-left py-3 px-4 text-foreground/80 font-semibold">Feature</th>
+                          <th className="text-center py-3 px-4 text-foreground/60 font-semibold">Free</th>
+                          <th className="text-center py-3 px-4 text-accent font-semibold">Premium</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-border/30">
+                          <td className="py-3 px-4 text-foreground">Providers Access</td>
+                          <td className="py-3 px-4 text-center text-foreground/60">1 Provider</td>
+                          <td className="py-3 px-4 text-center text-accent">All Providers</td>
+                        </tr>
+                        <tr className="border-b border-border/30">
+                          <td className="py-3 px-4 text-foreground">Channels</td>
+                          <td className="py-3 px-4 text-center text-foreground/60">Limited</td>
+                          <td className="py-3 px-4 text-center text-accent">Unlimited</td>
+                        </tr>
+                        <tr className="border-b border-border/30">
+                          <td className="py-3 px-4 text-foreground">Streaming Quality</td>
+                          <td className="py-3 px-4 text-center text-foreground/60">Standard</td>
+                          <td className="py-3 px-4 text-center text-accent">HD & 4K</td>
+                        </tr>
+                        <tr className="border-b border-border/30">
+                          <td className="py-3 px-4 text-foreground">Support</td>
+                          <td className="py-3 px-4 text-center text-foreground/60">Standard</td>
+                          <td className="py-3 px-4 text-center text-accent">Priority</td>
+                        </tr>
+                        <tr className="border-b border-border/30">
+                          <td className="py-3 px-4 text-foreground">Ads</td>
+                          <td className="py-3 px-4 text-center text-foreground/60">With Ads</td>
+                          <td className="py-3 px-4 text-center text-accent">Ad-Free</td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 px-4 text-foreground">Advanced Features</td>
+                          <td className="py-3 px-4 text-center text-foreground/60">Limited</td>
+                          <td className="py-3 px-4 text-center text-accent">Full Access</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <Button
+                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-6 text-lg font-semibold flex items-center justify-center gap-2"
+                      onClick={() => {
+                        // TODO: Implement upgrade flow
+                        alert('Upgrade functionality coming soon!');
+                      }}
+                    >
+                      <Crown size={24} />
+                      Upgrade to Premium
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
+
+          {/* Upgrade Button for Free Users */}
+          {isFreeUser && !showComparison && (
+            <div className="bg-card rounded-lg p-6 md:p-8 mb-8 border border-accent/50 bg-gradient-to-r from-accent/5 to-transparent">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+                    <Crown size={24} className="text-accent" />
+                    Unlock Premium Features
+                  </h3>
+                  <p className="text-foreground/70">
+                    Get access to all providers, unlimited channels, and premium features
+                  </p>
+                </div>
+                <Button
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-3 font-semibold flex items-center gap-2 whitespace-nowrap"
+                  onClick={() => {
+                    // TODO: Implement upgrade flow
+                    alert('Upgrade functionality coming soon!');
+                  }}
+                >
+                  <Crown size={20} />
+                  Upgrade Now
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="space-y-3">

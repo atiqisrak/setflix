@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { backdropVariants } from "@/lib/animations";
 import { useVideoPlayerEnhanced } from "./hooks/use-video-player-enhanced";
 import VideoControls from "./components/video-controls";
 import VideoError from "./components/video-error";
+import { useAuth } from "@/contexts/auth-context";
 
 interface VideoPlayerProps {
   isOpen: boolean;
@@ -20,6 +23,8 @@ export default function VideoPlayer({
   streamUrl,
   title,
 }: VideoPlayerProps) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const {
     videoRef,
     isPlaying,
@@ -36,6 +41,14 @@ export default function VideoPlayer({
     setQuality,
     toggleFullscreen,
   } = useVideoPlayerEnhanced({ isOpen, streamUrl });
+
+  useEffect(() => {
+    if (isOpen && !isAuthenticated) {
+      const currentPath = window.location.pathname;
+      onClose();
+      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
+    }
+  }, [isOpen, isAuthenticated, router, onClose]);
 
   if (!isOpen) return null;
 

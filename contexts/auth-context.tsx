@@ -16,6 +16,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  isAdmin: boolean;
+  isPremium: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -118,6 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
   }, []);
 
+  const isAdmin = user?.role === 'admin';
+  const isPremium = user?.role === 'premium_subscriber' || isAdmin;
+
   return (
     <AuthContext.Provider
       value={{
@@ -125,6 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         error,
+        isAdmin,
+        isPremium,
         login,
         register,
         logout,

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { modalVariants, backdropVariants } from "@/lib/animations";
 import HeroSection from "./components/hero-section";
 import ModalTabs from "./components/modal-tabs";
 import TabContent from "./components/tab-content";
 import { useMyList } from "@/hooks/use-my-list";
+import { useAuth } from "@/contexts/auth-context";
 import { SetflixContentItem } from "@/lib/iptv";
 
 interface ContentDetailModalItem {
@@ -39,6 +41,8 @@ export default function ContentDetailModal({
   onPlay,
   item,
 }: ContentDetailModalProps) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
   const { isInList, toggleListItem } = useMyList();
   const [activeTab, setActiveTab] = useState<
@@ -62,6 +66,15 @@ export default function ContentDetailModal({
       maturity: item.maturity,
     };
     toggleListItem(listItem);
+  };
+
+  const handlePlayClick = () => {
+    if (!isAuthenticated) {
+      const currentPath = window.location.pathname;
+      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+    onPlay?.(item);
   };
 
   useEffect(() => {
@@ -102,7 +115,7 @@ export default function ContentDetailModal({
               isLiked={isLiked}
               isInList={itemInList}
               onClose={onClose}
-              onPlay={onPlay ? () => onPlay(item) : undefined}
+              onPlay={handlePlayClick}
               onToggleLike={() => setIsLiked(!isLiked)}
               onToggleList={handleToggleList}
             />

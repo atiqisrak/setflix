@@ -9,10 +9,12 @@ import ProfileDropdown from "@/components/profile-dropdown";
 import NotificationsDropdown from "@/components/notifications-dropdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearch } from "@/contexts/search-context";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Header() {
   const router = useRouter();
   const { setSearchQuery, addRecentSearch } = useSearch();
+  const { isAdmin, isAuthenticated } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,7 +34,8 @@ export default function Header() {
   const navItems = [
     { label: "All Channels", href: "/channels" },
     { label: "Browse", href: "/browse" },
-    { label: "My List", href: "/my-list" },
+    ...(isAuthenticated ? [{ label: "My List", href: "/my-list" }] : []),
+    ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
   return (
