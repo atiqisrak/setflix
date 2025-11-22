@@ -30,17 +30,17 @@ const faqs = [
   {
     question: "How much does Setflix cost?",
     answer:
-      "We offer flexible subscription plans to suit your needs. Plans start at $9.99/month for basic access, with premium plans available for enhanced features and content. Check our pricing page for detailed information.",
+      "We offer flexible subscription plans to suit your needs. Plans start at $9.99/month for basic access, with Setflix+ plans available for enhanced features and content. Check our pricing page for detailed information.",
   },
   {
     question: "Can I watch offline?",
     answer:
-      "Yes! With our premium plans, you can download select content to watch offline on your mobile devices. This is perfect for travel or when you don't have internet access.",
+      "Yes! With our Setflix+ plans, you can download select content to watch offline on your mobile devices. This is perfect for travel or when you don't have internet access.",
   },
   {
     question: "How many devices can I use simultaneously?",
     answer:
-      "The number of simultaneous streams depends on your subscription plan. Basic plans allow 1-2 streams, while premium plans support up to 4 simultaneous streams on different devices.",
+      "The number of simultaneous streams depends on your subscription plan. Basic plans allow 1-2 streams, while Setflix+ plans support up to 4 simultaneous streams on different devices.",
   },
   {
     question: "What internet speed do I need?",

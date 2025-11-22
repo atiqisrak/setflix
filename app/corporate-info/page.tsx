@@ -66,7 +66,7 @@ export default function CorporateInfoPage() {
             <p className="mb-4">
               Setflix IPTV is a leading streaming platform that provides live TV
               and on-demand content to millions of users worldwide. Founded with
-              a mission to make premium entertainment accessible to everyone, we
+              a mission to make Setflix+ entertainment accessible to everyone, we
               continue to innovate and expand our services.
             </p>
             <p className="mb-4">

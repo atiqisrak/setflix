@@ -47,7 +47,7 @@ export default function AccountPage() {
 
   const userRole = user?.role || 'free_subscriber';
   const isFreeUser = userRole === 'free_subscriber';
-  const planName = isAdmin ? 'Admin' : isPremium ? 'Premium' : 'Free';
+  const planName = isAdmin ? 'Admin' : isPremium ? 'Setflix+' : 'Free';
   const planColor = isAdmin ? 'text-purple-500' : isPremium ? 'text-accent' : 'text-foreground/60';
 
   const freeBenefits = [
@@ -140,12 +140,12 @@ export default function AccountPage() {
                     {showComparison ? (
                       <>
                         <ChevronUp size={18} />
-                        Hide Premium Comparison
+                        Hide Setflix+ Comparison
                       </>
                     ) : (
                       <>
                         <ChevronDown size={18} />
-                        View Premium Benefits
+                        View Setflix+ Benefits
                       </>
                     )}
                   </Button>
@@ -154,7 +154,7 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* Premium Comparison Table */}
+          {/* Setflix+ Comparison Table */}
           {isFreeUser && (
             <AnimatePresence>
               {showComparison && (
@@ -166,7 +166,7 @@ export default function AccountPage() {
                 >
                   <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
                     <Crown size={24} className="text-accent" />
-                    Premium vs Free Comparison
+                    Setflix+ vs Free Comparison
                   </h3>
                   
                   <div className="overflow-x-auto">
@@ -175,7 +175,7 @@ export default function AccountPage() {
                         <tr className="border-b border-border/50">
                           <th className="text-left py-3 px-4 text-foreground/80 font-semibold">Feature</th>
                           <th className="text-center py-3 px-4 text-foreground/60 font-semibold">Free</th>
-                          <th className="text-center py-3 px-4 text-accent font-semibold">Premium</th>
+                          <th className="text-center py-3 px-4 text-accent font-semibold">Setflix+</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -222,7 +222,7 @@ export default function AccountPage() {
                       }}
                     >
                       <Crown size={24} />
-                      Upgrade to Premium
+                      Upgrade to Setflix+
                     </Button>
                   </div>
                 </motion.div>
@@ -237,10 +237,10 @@ export default function AccountPage() {
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
                     <Crown size={24} className="text-accent" />
-                    Unlock Premium Features
+                    Unlock Setflix+ Features
                   </h3>
                   <p className="text-foreground/70">
-                    Get access to all providers, unlimited channels, and premium features
+                    Get access to all providers, unlimited channels, and Setflix+ features
                   </p>
                 </div>
                 <Button

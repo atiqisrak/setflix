@@ -180,7 +180,7 @@ export default function ProviderTabs({
         <div className="mb-4 p-3 bg-accent/10 border border-accent/30 rounded-lg">
           <p className="text-sm text-foreground/80">
             <Crown size={16} className="inline mr-2 text-accent" />
-            You're on the Free plan. <Link href="/account" className="text-accent hover:underline">Upgrade to Premium</Link> to access all providers.
+            You're on the Free plan. <Link href="/account" className="text-accent hover:underline">Upgrade to Setflix+</Link> to access all providers.
           </p>
         </div>
       )}

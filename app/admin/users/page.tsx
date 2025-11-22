@@ -125,7 +125,7 @@ export default function AdminUsersPage() {
               <option value="">All Roles</option>
               <option value="admin">Admin</option>
               <option value="free_subscriber">Free Subscriber</option>
-              <option value="premium_subscriber">Premium Subscriber</option>
+              <option value="premium_subscriber">Setflix+ Subscriber</option>
             </select>
           </div>
 
@@ -254,7 +254,7 @@ export default function AdminUsersPage() {
                 className="w-full px-3 py-2 bg-background border border-border rounded text-foreground"
               >
                 <option value="free_subscriber">Free Subscriber</option>
-                <option value="premium_subscriber">Premium Subscriber</option>
+                <option value="premium_subscriber">Setflix+ Subscriber</option>
                 <option value="admin">Admin</option>
               </select>
             </div>

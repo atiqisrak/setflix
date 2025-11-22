@@ -63,7 +63,7 @@ export default function AboutPage() {
         content={
           <>
             <p className="mb-4">
-              Setflix was founded with a simple vision: to make premium
+              Setflix was founded with a simple vision: to make Setflix+
               entertainment accessible to everyone. What started as an idea to
               revolutionize IPTV streaming has grown into a comprehensive
               platform serving millions of users worldwide.
