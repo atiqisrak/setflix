@@ -20,7 +20,9 @@ const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Users", href: "/admin/users", icon: Users },
   { name: "Providers", href: "/admin/providers", icon: Server },
-  { name: "Channels", href: "/admin/channels", icon: Tv },
+    { name: "Channels", href: "/admin/channels", icon: Tv },
+    { name: "Playlist", href: "/admin/playlist", icon: Tv },
+    { name: "Player", href: "/admin/player", icon: Tv },
   { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
