@@ -27,6 +27,7 @@ interface AnimatedContentCardProps {
   onLeave: () => void;
   onPlay?: () => void;
   onMoreInfo?: () => void;
+  disableHover?: boolean;
 }
 
 export default function AnimatedContentCard({
@@ -40,6 +41,7 @@ export default function AnimatedContentCard({
   onLeave,
   onPlay,
   onMoreInfo,
+  disableHover = false,
 }: AnimatedContentCardProps) {
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,24 +121,31 @@ export default function AnimatedContentCard({
 
   const transform = getTransform();
 
+  const motionProps: any = {};
+  if (!disableHover) {
+    motionProps.onMouseEnter = () => onHover(index);
+    motionProps.onMouseLeave = onLeave;
+    motionProps.animate = {
+      x: transform.x,
+      y: transform.y,
+      scale: transform.scale,
+    };
+    motionProps.transition = {
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1],
+    };
+    motionProps.style = { zIndex: isCardHovered ? 50 : hoveredIndex !== null ? 10 : 1 };
+  } else {
+    // Disable hover movement for touch devices
+    motionProps.animate = { x: 0, y: 0, scale: 1 };
+    motionProps.transition = { duration: 0 };
+    motionProps.style = { zIndex: 1 };
+  }
+
   return (
-    <motion.div
-      ref={containerRef}
-      onMouseEnter={() => onHover(index)}
-      onMouseLeave={onLeave}
-      animate={{
-        x: transform.x,
-        y: transform.y,
-        scale: transform.scale,
-      }}
-      transition={{
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
-      }}
-      style={{
-        zIndex: isCardHovered ? 50 : hoveredIndex !== null ? 10 : 1,
-      }}
-    >
+    // spread motionProps to conditionally attach handlers/animation
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <motion.div ref={containerRef} {...motionProps}>
       <ContentCard
         item={item}
         index={index}
@@ -145,6 +154,7 @@ export default function AnimatedContentCard({
         onLeave={onLeave}
         onPlay={onPlay}
         onMoreInfo={onMoreInfo}
+        disableHover={disableHover}
       />
     </motion.div>
   );

@@ -83,7 +83,7 @@ export default function Footer() {
   }, [isAuthenticated]);
 
   return (
-    <footer className="relative bg-gradient-to-b from-background via-background/95 to-background border-t border-border/50 mt-20 overflow-hidden">
+    <footer className="relative bottom-0 w-full z-40 bg-gradient-to-t from-background via-background/95 to-background border-t border-border/50 overflow-hidden">
       {/* Decorative gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/5 pointer-events-none" />
 
@@ -92,7 +92,7 @@ export default function Footer() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
       </div>
 
-      <div className="relative px-4 sm:px-6 md:px-8 lg:px-12 py-12 md:py-16 max-w-7xl mx-auto">
+      <div className="relative px-4 sm:px-6 md:px-8 lg:px-12 py-8 md:py-10 max-w-7xl mx-auto">
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 mb-12">
           {/* Brand Section */}
@@ -247,8 +247,12 @@ export default function Footer() {
               reserved.
             </p>
             <p className="text-foreground/40">
-              Made with <span className="text-red-500">♥</span> for streaming
-              enthusiasts
+              Made with <span className="text-red-500">♥</span> by {" "}
+              <span className="text-foreground/40">
+                <Link href="https://atiqisrak.vercel.app" className="hover:text-accent transition-colors">
+                  Atiq Israk
+                </Link>
+              </span>
             </p>
           </div>
         </div>

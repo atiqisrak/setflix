@@ -242,13 +242,6 @@ export default function AllChannelsPage() {
               <h1 className="text-3xl md:text-4xl font-bold text-white">
                 All Channels
               </h1>
-
-              {/* Provider Status */}
-              {selectedProviderId && isAuthenticated && (
-                <div className="text-sm text-gray-400 hidden md:block">
-                  {currentProvider?.name || "Loading..."}
-                </div>
-              )}
               {isAuthenticated && (
                 <div className="flex items-center gap-2">
                   {activeFiltersCount > 0 && (

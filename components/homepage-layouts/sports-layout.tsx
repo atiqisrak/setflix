@@ -74,7 +74,7 @@ export default function SportsLayout({
 
   // Get channels for featured categories
   const getCategoryChannels = (category: string) => {
-    return categorizedContent[category]?.slice(0, 8) || [];
+    return categorizedContent[category]?.slice(0, 6) || [];
   };
 
   const features = [
@@ -308,7 +308,7 @@ export default function SportsLayout({
       {/* Category Sections with Dynamic Channels */}
       {topCategories.slice(0, 3).map((category, catIndex) => {
         const categoryChannels =
-          categorizedContent[category]?.slice(0, 8) || [];
+          categorizedContent[category]?.slice(0, 6) || [];
         if (categoryChannels.length === 0) return null;
 
         return (
@@ -327,7 +327,7 @@ export default function SportsLayout({
               </Link>
             </div>
             <div className="relative">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
                 {categoryChannels.map((channel, index) => (
                   <motion.div
                     key={channel.id}
@@ -339,7 +339,7 @@ export default function SportsLayout({
                   >
                     <ChannelCard
                       item={channel}
-                      viewMode="grid-small"
+                      viewMode="grid-medium"
                       onPlay={() => onPlay?.(channel)}
                       onMoreInfo={() => onMoreInfo?.(channel)}
                     />

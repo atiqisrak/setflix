@@ -1,28 +1,34 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { LogIn } from "lucide-react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import ContentCarousel from "@/components/content-carousel";
 import VideoPlayer from "@/components/video-player";
+import AnimatedContentCard from "@/components/animated-content-card";
+import Pagination from "@/components/channels/pagination";
 import { Button } from "@/components/ui/button";
 import { useIPTVChannels } from "@/hooks/use-iptv-channels";
 import { useAuth } from "@/contexts/auth-context";
 import {
   SetflixContentItem,
   filterChannels,
-  groupChannelsByCategory,
   transformIPTVToContent,
 } from "@/lib/iptv";
+
+const ITEMS_PER_PAGE = 24;
 
 export default function BrowsePage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [selectedGenre, setSelectedGenre] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [colsPerRow, setColsPerRow] = useState(4);
+  const [isMobile, setIsMobile] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [currentStreamUrl, setCurrentStreamUrl] = useState<string>("");
   const [currentStreamTitle, setCurrentStreamTitle] = useState<string>("");
@@ -39,6 +45,22 @@ export default function BrowsePage() {
     "Documentary",
   ];
 
+  // Update columns per row based on screen size
+  useEffect(() => {
+    const updateColsPerRow = () => {
+      if (typeof window === "undefined") return;
+      const isMobile = window.innerWidth < 640;
+      setIsMobile(isMobile);
+      const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024;
+      const isDesktop = window.innerWidth >= 1024 && window.innerWidth < 1280;
+      setColsPerRow(isMobile ? 2 : isTablet ? 3 : isDesktop ? 4 : 5);
+    };
+
+    updateColsPerRow();
+    window.addEventListener("resize", updateColsPerRow);
+    return () => window.removeEventListener("resize", updateColsPerRow);
+  }, []);
+
   // Filter channels by selected genre
   const filteredChannels = useMemo(() => {
     if (selectedGenre === "all") {
@@ -50,20 +72,21 @@ export default function BrowsePage() {
     );
   }, [selectedGenre, contentItems, channels]);
 
-  // Group channels by category
-  const groupedChannels = useMemo(() => {
-    if (selectedGenre === "all") {
-      const grouped = groupChannelsByCategory(channels);
-      const result: Record<string, SetflixContentItem[]> = {};
-      Object.keys(grouped).forEach((category) => {
-        result[category] = grouped[category]
-          .slice(0, 20)
-          .map((channel, index) => transformIPTVToContent(channel, index));
-      });
-      return result;
-    }
-    return {};
-  }, [selectedGenre, channels]);
+  // Pagination logic
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredChannels.length / ITEMS_PER_PAGE);
+  }, [filteredChannels.length]);
+
+  const paginatedChannels = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredChannels.slice(startIndex, endIndex);
+  }, [filteredChannels, currentPage]);
+
+  // Reset to page 1 when genre changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedGenre]);
 
   const handlePlay = (item: SetflixContentItem) => {
     if (!isAuthenticated) {
@@ -76,6 +99,10 @@ export default function BrowsePage() {
       setCurrentStreamTitle(item.title);
       setIsVideoPlayerOpen(true);
     }
+  };
+
+  const handleMoreInfo = (item: SetflixContentItem) => {
+    // You can implement a modal or navigation here if needed
   };
 
   return (
@@ -105,39 +132,62 @@ export default function BrowsePage() {
           </div>
         </div>
 
-        <div className="space-y-12 relative">
+        <div className="relative">
           {isLoading ? (
             <div className="text-foreground/60 py-8">Loading channels...</div>
           ) : error ? (
             <div className="text-foreground/60 py-8">
               Failed to load channels. Please try again later.
             </div>
-          ) : selectedGenre === "all" ? (
-            <>
-              {Object.keys(groupedChannels)
-                .slice(0, 5)
-                .map((category) => (
-                  <ContentCarousel
-                    key={category}
-                    title={category}
-                    items={groupedChannels[category]}
-                    onPlay={handlePlay}
-                  />
-                ))}
-              <ContentCarousel
-                title="All Channels"
-                items={contentItems.slice(0, 50)}
-                onPlay={handlePlay}
-              />
-            </>
           ) : (
-            <ContentCarousel
-              title={`${
-                selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1)
-              } Channels`}
-              items={filteredChannels.slice(0, 50)}
-              onPlay={handlePlay}
-            />
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl md:text-2xl font-bold text-foreground">
+                  {selectedGenre === "all" ? (
+                    <>All Channels ({filteredChannels.length})</>
+                  ) : (
+                    <>
+                      {selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1)} Channels ({filteredChannels.length})
+                    </>
+                  )}
+                </h2>
+              </div>
+
+              {paginatedChannels.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
+                    {paginatedChannels.map((item, index) => (
+                      <AnimatedContentCard
+                        key={item.id}
+                        item={item}
+                        index={index}
+                        layout="grid"
+                        totalItems={paginatedChannels.length}
+                        colsPerRow={colsPerRow}
+                        hoveredIndex={hoveredIndex}
+                        onHover={setHoveredIndex}
+                        onLeave={() => setHoveredIndex(null)}
+                        disableHover={isMobile}
+                        onPlay={() => handlePlay(item)}
+                        onMoreInfo={() => handleMoreInfo(item)}
+                      />
+                    ))}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="text-foreground/60 py-8 text-center">
+                  No channels found in this category.
+                </div>
+              )}
+            </>
           )}
 
           {/* Gradient Overlay for Non-Authenticated Users */}

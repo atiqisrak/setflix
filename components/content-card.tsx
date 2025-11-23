@@ -23,6 +23,7 @@ interface ContentCardProps {
   onLeave?: () => void;
   onPlay?: () => void;
   onMoreInfo?: () => void;
+  disableHover?: boolean;
 }
 
 export default function ContentCard({
@@ -33,6 +34,7 @@ export default function ContentCard({
   onLeave,
   onPlay,
   onMoreInfo,
+  disableHover = false,
 }: ContentCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -59,6 +61,7 @@ export default function ContentCard({
   }, []);
 
   const handleMouseEnter = () => {
+    if (disableHover) return;
     onHover?.();
     // Show expanded card overlay after delay (for UX)
     hoverTimeoutRef.current = setTimeout(() => {
@@ -67,6 +70,7 @@ export default function ContentCard({
   };
 
   const handleMouseLeave = () => {
+    if (disableHover) return;
     onLeave?.();
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -80,6 +84,10 @@ export default function ContentCard({
   const baseWidth = isMobile ? 144 : 250;
   const expandedWidth = isMobile ? 300 : 350;
 
+  // When hover interactions are disabled (touch devices), render full-width within grid cell
+  const effectiveBase = disableHover ? "100%" : baseWidth;
+  const effectiveExpanded = disableHover ? "100%" : expandedWidth;
+
   // Card should expand immediately when hovered (either via local hover or carousel hover tracking)
   // isCardHovered is set immediately when hoveredIndex matches, ensuring instant expansion
   // isHovered is for the expanded card overlay (has delay for better UX)
@@ -90,11 +98,11 @@ export default function ContentCard({
       ref={cardRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="shrink-0 cursor-pointer group relative"
-      initial={{ width: baseWidth, flexBasis: baseWidth }}
+      className={`cursor-pointer group relative ${disableHover ? "w-full" : "shrink-0"}`}
+      initial={{ width: effectiveBase, flexBasis: effectiveBase }}
       animate={{
-        width: shouldExpand ? expandedWidth : baseWidth,
-        flexBasis: shouldExpand ? expandedWidth : baseWidth,
+        width: shouldExpand ? effectiveExpanded : effectiveBase,
+        flexBasis: shouldExpand ? effectiveExpanded : effectiveBase,
       }}
       transition={{
         width: {

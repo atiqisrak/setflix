@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Radio, Check, ChevronDown, Globe, Crown } from "lucide-react";
@@ -32,6 +32,8 @@ export default function ProviderTabs({
     "main" | "regional" | "specialty" | "third-party" | "all"
   >("main");
   const [showAll, setShowAll] = useState(false);
+  // Refs to provider buttons for TV/keyboard navigation
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   if (!isAuthenticated) {
     return null;
@@ -74,6 +76,35 @@ export default function ProviderTabs({
     const typeProviders = groupedProviders[selectedType] || [];
     return showAll ? typeProviders : typeProviders.slice(0, 12);
   }, [selectedType, groupedProviders, displayProvidersList, showAll, canAccessMultipleProviders]);
+
+  // Keep refs array in sync with displayed providers
+  useEffect(() => {
+    buttonRefs.current = buttonRefs.current.slice(0, displayProviders.length);
+  }, [displayProviders.length]);
+
+  // Keyboard navigation for TV/remote: left/right/home/end and activate
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
+    if (!displayProviders || displayProviders.length === 0) return;
+    const last = displayProviders.length - 1;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      const next = idx === last ? 0 : idx + 1;
+      buttonRefs.current[next]?.focus();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      const prev = idx === 0 ? last : idx - 1;
+      buttonRefs.current[prev]?.focus();
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      buttonRefs.current[0]?.focus();
+    } else if (e.key === "End") {
+      e.preventDefault();
+      buttonRefs.current[last]?.focus();
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleProviderClick(displayProviders[idx].id);
+    }
+  };
 
   // Main providers (top 9)
   const mainProviders = useMemo(() => {
@@ -186,8 +217,8 @@ export default function ProviderTabs({
       )}
 
       {/* Provider Tabs */}
-      <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
-        {displayProviders.map((provider) => {
+      <div role="tablist" aria-label="Providers" className="flex flex-wrap gap-4 overflow-x-auto pb-2">
+        {displayProviders.map((provider, idx) => {
           const providerHealth = health[provider.id];
           const isSelected = selectedProviderId === provider.id;
           const status = providerHealth?.status;
@@ -198,36 +229,36 @@ export default function ProviderTabs({
               key={provider.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              ref={(el) => { buttonRefs.current[idx] = el }}
               onClick={() => handleProviderClick(provider.id)}
+              onKeyDown={(e) => handleKeyDown(e, idx)}
+              role="tab"
+              aria-selected={isSelected}
+              tabIndex={isSelected ? 0 : -1}
               className={cn(
-                "relative flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition whitespace-nowrap border-2",
+                "relative flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-lg transition whitespace-nowrap border-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/60 min-w-40",
                 isSelected
                   ? "bg-accent text-accent-foreground border-accent shadow-lg shadow-accent/20"
-                  : "bg-gray-900/50 text-gray-300 hover:bg-gray-900 border-gray-800 hover:border-gray-700"
+                  : "bg-gray-900/60 text-gray-200 hover:bg-gray-900 border-gray-800 hover:border-gray-700"
               )}
-              title={`${provider.name} - ${
-                channelCount || "?"
-              } channels - ${getStatusText(status)}`}
+              title={`${provider.name} - ${channelCount || "?"} channels - ${getStatusText(status)}`}
             >
               {/* Status Indicator */}
               <div className="flex items-center gap-2">
                 <div
                   className={cn(
-                    "w-2 h-2 rounded-full flex-shrink-0",
+                    "w-4 h-4 rounded-full shrink-0",
                     getStatusColor(status)
                   )}
                 />
                 <Radio
-                  size={16}
-                  className={cn(
-                    "flex-shrink-0",
-                    isSelected && "text-accent-foreground"
-                  )}
+                  size={20}
+                  className={cn("shrink-0", isSelected && "text-accent-foreground")}
                 />
               </div>
 
               {/* Provider Name */}
-              <span className="truncate max-w-[150px]">{provider.name}</span>
+              <span className="truncate max-w-[220px]">{provider.name}</span>
 
               {/* Channel Count */}
               {channelCount !== undefined && (
@@ -246,9 +277,9 @@ export default function ProviderTabs({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5"
+                  className="absolute -top-2 -right-2 bg-accent rounded-full p-1.5"
                 >
-                  <Check size={12} className="text-white" />
+                  <Check size={14} className="text-white" />
                 </motion.div>
               )}
 
@@ -256,10 +287,8 @@ export default function ProviderTabs({
               {provider.region && (
                 <span
                   className={cn(
-                    "px-1.5 py-0.5 rounded text-[10px] uppercase font-bold",
-                    isSelected
-                      ? "bg-accent-foreground/20"
-                      : "bg-gray-800 text-gray-400"
+                    "px-2 py-0.5 rounded text-xs uppercase font-semibold",
+                    isSelected ? "bg-accent-foreground/20" : "bg-gray-800 text-gray-300"
                   )}
                 >
                   {provider.region}
@@ -270,23 +299,22 @@ export default function ProviderTabs({
         })}
 
         {/* Show More/Less Toggle - Only for premium/admin */}
-        {canAccessMultipleProviders && 
+        {canAccessMultipleProviders &&
           ((selectedType === "all" && displayProvidersList.length > 12) ||
-            (selectedType !== "all" &&
-              (groupedProviders[selectedType]?.length || 0) > 12)) && (
+            (selectedType !== "all" && (groupedProviders[selectedType]?.length || 0) > 12)) && (
           <button
             onClick={() => setShowAll(!showAll)}
-            className="flex items-center gap-1 px-4 py-2.5 rounded-lg font-medium text-sm bg-gray-900/50 text-gray-300 hover:bg-gray-900 border border-gray-800 hover:border-gray-700 transition whitespace-nowrap"
+            className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-lg bg-gray-900/60 text-gray-200 hover:bg-gray-900 border border-gray-800 hover:border-gray-700 transition whitespace-nowrap focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/40"
           >
             {showAll ? (
               <>
                 <span>Show Less</span>
-                <ChevronDown size={16} className="rotate-180" />
+                <ChevronDown size={18} className="rotate-180" />
               </>
             ) : (
               <>
                 <span>Show More</span>
-                <ChevronDown size={16} />
+                <ChevronDown size={18} />
               </>
             )}
           </button>

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import AdminSidebar from "@/components/admin/admin-sidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import Link from "next/link";
+import Footer from "@/components/footer";
 
 export default function AdminLayout({
   children,
@@ -14,6 +16,30 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const { user, isAdmin, isAuthenticated, isLoading, logout } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);  
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const navItems = [
+    { label: "Home", href: "/" },
+    { label: "All Channels", href: "/channels" },
+    { label: "Browse", href: "/browse" },
+    ...(isAuthenticated ? [{ label: "My List", href: "/my-list" }] : []),
+    ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
+  ];
+
 
   useEffect(() => {
     if (!isLoading) {
@@ -63,6 +89,22 @@ export default function AdminLayout({
                 </p>
               )}
             </div>
+
+              <div>
+              <nav className="hidden md:flex gap-6 text-foreground/80 text-xl">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="hover:text-accent transition duration-200
+              hover:scale-110"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+              </div>
+            
             <Button
               variant="outline"
               onClick={handleLogout}
@@ -76,6 +118,7 @@ export default function AdminLayout({
 
         {/* Page content */}
         <main className="p-4 md:p-8">{children}</main>
+        <Footer />
       </div>
     </div>
   );
