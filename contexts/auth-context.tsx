@@ -4,12 +4,10 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
   ReactNode,
   useCallback,
 } from "react";
-import { authApi, User } from "@/lib/api/auth";
-import { apiClient } from "@/lib/api/client";
+import type { User } from "@/lib/api/auth";
 
 interface AuthContextType {
   user: User | null;
@@ -27,101 +25,47 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/** Local-only mock user so frontend works without backend auth. */
+const MOCK_USER: User = {
+  id: "local-user",
+  email: "user@local",
+  name: "User",
+  role: "admin",
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(MOCK_USER);
+  const [isLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadUser = useCallback(async () => {
-    if (!apiClient.isAuthenticated()) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const currentUser = await authApi.getCurrentUser();
-      setUser(currentUser);
-      setError(null);
-    } catch (err) {
-      setUser(null);
-      apiClient.clearAuth();
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
-
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await authApi.login({ email, password });
-      setUser(response.user);
-    } catch (err: any) {
-      const errorMessage = err?.error || "Failed to login";
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+  const login = useCallback(async (_email: string, _password: string) => {
+    setUser(MOCK_USER);
+    setError(null);
   }, []);
 
   const register = useCallback(
-    async (email: string, password: string, name?: string) => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        // Register but don't auto-login - user needs to sign in separately
-        await authApi.register({ email, password, name });
-        // Clear any existing auth state
-        apiClient.clearAuth();
-        setUser(null);
-      } catch (err: any) {
-        const errorMessage = err?.error || "Failed to register";
-        setError(errorMessage);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
+    async (_email: string, _password: string, _name?: string) => {
+      setError(null);
+      // No backend call; user can "log in" locally if desired
     },
     []
   );
 
   const logout = useCallback(async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // Ignore errors on logout
-    } finally {
-      setUser(null);
-      apiClient.clearAuth();
-    }
+    // Keep user as mock so app remains usable without backend
+    setUser(MOCK_USER);
   }, []);
 
   const refreshUser = useCallback(async () => {
-    if (!apiClient.isAuthenticated()) {
-      setUser(null);
-      return;
-    }
-
-    try {
-      const currentUser = await authApi.getCurrentUser();
-      setUser(currentUser);
-    } catch {
-      setUser(null);
-      apiClient.clearAuth();
-    }
+    setUser(MOCK_USER);
   }, []);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  const isAdmin = user?.role === 'admin';
-  const isPremium = user?.role === 'premium_subscriber' || isAdmin;
+  const isAdmin = user?.role === "admin";
+  const isPremium = user?.role === "premium_subscriber" || isAdmin;
 
   return (
     <AuthContext.Provider

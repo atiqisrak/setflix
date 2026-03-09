@@ -1,0 +1,71 @@
+[
+  {
+    "id": "show-cosmos",
+    "title": "Cosmos Laundromat",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Cosmos_laundromat_poster.png/440px-Cosmos_laundromat_poster.png",
+    "description": "A depressed sheep gets a chance to restart his life when a mysterious creature appears. First episode of the Blender Foundation's open movie project.",
+    "year": 2015,
+    "genres": ["Animation", "Comedy", "Fantasy"],
+    "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "episodes": [
+      {
+        "season": 1,
+        "episode": 1,
+        "title": "First Cycle",
+        "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+      }
+    ],
+    "rating": 84,
+    "maturity": "PG"
+  },
+  {
+    "id": "show-sample",
+    "title": "Sample Series",
+    "image": "https://picsum.photos/seed/show2/300/450",
+    "description": "A sample TV series for the Setflix catalog. Add your own entries to data/shows.json with episodes and streamUrl.",
+    "year": 2024,
+    "genres": ["Drama", "Comedy"],
+    "streamUrl": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+    "episodes": [
+      {
+        "season": 1,
+        "episode": 1,
+        "title": "Pilot",
+        "streamUrl": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+      },
+      {
+        "season": 1,
+        "episode": 2,
+        "title": "Episode Two",
+        "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+      }
+    ],
+    "rating": 78,
+    "maturity": "TV-14"
+  },
+  {
+    "id": "show-demo",
+    "title": "Demo Reels",
+    "image": "https://picsum.photos/seed/show3/300/450",
+    "description": "Short demo content for testing the TV Shows section. Replace with your own catalog or connect Seerr/Plex for real content.",
+    "year": 2023,
+    "genres": ["Documentary", "Short"],
+    "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "episodes": [
+      {
+        "season": 1,
+        "episode": 1,
+        "title": "Big Buck Bunny",
+        "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+      },
+      {
+        "season": 1,
+        "episode": 2,
+        "title": "Sintel",
+        "streamUrl": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+      }
+    ],
+    "rating": 70,
+    "maturity": "TV-G"
+  }
+]

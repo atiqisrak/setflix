@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/auth-context";
 import AdminSidebar from "@/components/admin/admin-sidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/footer";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function AdminLayout({
   children,
@@ -15,7 +15,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isAdmin, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAdmin, isAuthenticated, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);  
 
@@ -39,31 +39,6 @@ export default function AdminLayout({
     ...(isAuthenticated ? [{ label: "My List", href: "/my-list" }] : []),
     ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
   ];
-
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        // Not logged in, redirect to login with callback
-        router.push(`/login?callback=${encodeURIComponent("/admin")}`);
-      } else if (!isAdmin) {
-        // Logged in but not admin, redirect to home
-        router.push("/");
-      }
-    }
-  }, [isLoading, isAuthenticated, isAdmin, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-foreground/60">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
 
   const handleLogout = async () => {
     await logout();

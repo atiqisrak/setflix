@@ -62,10 +62,30 @@
    pnpm dev
    ```
 
-4. **Open your browser**
+4. **Environment variables (optional)**
+
+   Copy `.env.example` to `.env` and add any keys you need. Hero images and carousels use **Pexels** for photos when `PEXELS_API_KEY` is set; if unset, the app uses local fallback images and runs without errors.
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   - `PEXELS_API_KEY` (optional) – [Pexels API](https://www.pexels.com/api/) key for hero/carousel images. Omit to use fallback images.
+
+5. **Open your browser**
    ```
    http://localhost:3000
    ```
+
+### Optional: Run Seerr (media request manager)
+
+Seerr lets you manage movie/show **requests** and integrates with Plex/Jellyfin and Radarr/Sonarr. It does **not** stream video; Setflix plays content from its own catalog (`data/movies.json`, `data/shows.json`). To run Seerr in Docker:
+
+```bash
+docker compose -f docker/seerr/docker-compose.yaml up -d
+```
+
+Then open http://localhost:5055 to complete setup. See `docker/seerr/README.md` for what Seerr does and how it relates to Setflix.
 
 ### Build for Production
 

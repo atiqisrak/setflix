@@ -188,11 +188,6 @@ export default function AllChannelsPage() {
   }, [currentPage]);
 
   const handlePlay = (item: SetflixContentItem) => {
-    if (!isAuthenticated) {
-      const currentPath = window.location.pathname;
-      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
-      return;
-    }
     if (item.url) {
       setCurrentStreamUrl(item.url);
       setCurrentStreamTitle(item.title);
@@ -384,39 +379,6 @@ export default function AllChannelsPage() {
               />
             )}
 
-            {/* Gradient Overlay for Non-Authenticated Users */}
-            {!isAuthenticated && (
-              <div className="absolute inset-0 pointer-events-none z-10">
-                {/* Gradient from transparent at top to black at bottom */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black" />
-                
-                {/* Get In Section */}
-                <div className="absolute bottom-0 left-0 right-0 px-4 md:px-8 py-12 pointer-events-auto">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="max-w-2xl mx-auto text-center"
-                  >
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                      Get In to Access All Channels
-                    </h2>
-                    <p className="text-gray-300 text-lg mb-8">
-                      Sign in to browse thousands of live channels from providers around the world
-                    </p>
-                    <Link href={`/login?callback=${encodeURIComponent("/channels")}`}>
-                      <Button
-                        size="lg"
-                        className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-6 text-lg font-semibold flex items-center gap-2 mx-auto"
-                      >
-                        <LogIn size={24} />
-                        Sign In to Continue
-                      </Button>
-                    </Link>
-                  </motion.div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </main>

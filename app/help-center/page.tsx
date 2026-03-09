@@ -30,7 +30,7 @@ const helpCategories = [
     icon: Book,
     title: "Account Management",
     description: "Manage your account, subscription, and preferences",
-    link: "/account",
+    link: "/settings",
   },
   {
     icon: MessageSquare,
@@ -43,9 +43,9 @@ const helpCategories = [
 const quickLinks = [
   { title: "How to create an account", href: "/faq" },
   { title: "Troubleshooting playback issues", href: "/faq" },
-  { title: "Update payment information", href: "/account" },
-  { title: "Change password", href: "/account" },
-  { title: "Cancel subscription", href: "/account" },
+  { title: "Update payment information", href: "/settings" },
+  { title: "Change password", href: "/settings" },
+  { title: "Cancel subscription", href: "/settings" },
   { title: "Device compatibility", href: "/faq" },
 ];
 

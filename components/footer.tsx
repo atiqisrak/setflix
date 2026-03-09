@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/auth-context";
 
 const footerLinks = [
   {
@@ -48,8 +47,10 @@ const footerLinks = [
   {
     title: "Account",
     links: [
-      { label: "My Account", href: "/account" },
+      { label: "Settings", href: "/settings" },
       { label: "My List", href: "/my-list" },
+      { label: "Movies", href: "/movies" },
+      { label: "TV Shows", href: "/shows" },
       { label: "Ways to Watch", href: "/ways-to-watch" },
       { label: "Corporate Info", href: "/corporate-info" },
     ],
@@ -65,22 +66,9 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-  const { isAuthenticated } = useAuth();
   const [selectedLanguage, setSelectedLanguage] = useState("English");
 
-  const footerLinksWithAuth = useMemo(() => {
-    return footerLinks.map((section) => {
-      if (section.title === "Account") {
-        return {
-          ...section,
-          links: section.links.filter(
-            (link) => link.href !== "/my-list" || isAuthenticated
-          ),
-        };
-      }
-      return section;
-    });
-  }, [isAuthenticated]);
+  const footerLinksWithAuth = useMemo(() => footerLinks, []);
 
   return (
     <footer className="relative bottom-0 w-full z-40 bg-gradient-to-t from-background via-background/95 to-background border-t border-border/50 overflow-hidden">

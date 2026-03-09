@@ -1,0 +1,46 @@
+# Seerr + Jellyfin – minimal media stack (no config yet)
+# Run: docker compose -f docker/seerr/docker-compose.jellyfin.yaml up -d
+# Then: 1) Set up Jellyfin at http://localhost:8096  2) Set up Seerr at http://localhost:5055 and add Jellyfin there.
+
+services:
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=UTC
+      - PORT=5055
+    ports:
+      - "5055:5055"
+    volumes:
+      - seerr-config:/app/config
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: unless-stopped
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - TZ=UTC
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - "8096:8096"
+    volumes:
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
+      # Add a folder for your media (create it and put movies/shows inside):
+      # - /path/on/host/Movies:/media/movies:ro
+      # - /path/on/host/TV:/media/tv:ro
+    restart: unless-stopped
+
+volumes:
+  seerr-config:
+  jellyfin-config:
+  jellyfin-cache:

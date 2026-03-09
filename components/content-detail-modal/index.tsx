@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { modalVariants, backdropVariants } from "@/lib/animations";
 import HeroSection from "./components/hero-section";
 import ModalTabs from "./components/modal-tabs";
 import TabContent from "./components/tab-content";
 import { useMyList } from "@/hooks/use-my-list";
-import { useAuth } from "@/contexts/auth-context";
 import { SetflixContentItem } from "@/lib/iptv";
 
 interface ContentDetailModalItem {
@@ -33,6 +31,10 @@ interface ContentDetailModalProps {
   onClose: () => void;
   onPlay?: (item: ContentDetailModalItem) => void;
   item: ContentDetailModalItem;
+  /** Use for list check/toggle when item is from My List with string id (e.g. movie/series) */
+  listId?: number | string;
+  /** When provided, called instead of internal toggle for list (e.g. when showing movie/series from My List) */
+  onToggleListCustom?: () => void;
 }
 
 export default function ContentDetailModal({
@@ -40,18 +42,22 @@ export default function ContentDetailModal({
   onClose,
   onPlay,
   item,
+  listId,
+  onToggleListCustom,
 }: ContentDetailModalProps) {
-  const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
   const { isInList, toggleListItem } = useMyList();
   const [activeTab, setActiveTab] = useState<
     "overview" | "episodes" | "details"
   >("overview");
 
-  const itemInList = isInList(item.id);
+  const itemInList = listId !== undefined ? isInList(listId) : isInList(item.id);
 
   const handleToggleList = () => {
+    if (onToggleListCustom) {
+      onToggleListCustom();
+      return;
+    }
     const listItem: SetflixContentItem = {
       id: item.id,
       title: item.title,
@@ -69,11 +75,6 @@ export default function ContentDetailModal({
   };
 
   const handlePlayClick = () => {
-    if (!isAuthenticated) {
-      const currentPath = window.location.pathname;
-      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
-      return;
-    }
     onPlay?.(item);
   };
 

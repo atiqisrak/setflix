@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import HeroBanner from "@/components/hero-banner";
 import Footer from "@/components/footer";
@@ -12,7 +11,6 @@ import NewsLayout from "@/components/homepage-layouts/news-layout";
 import EntertainmentLayout from "@/components/homepage-layouts/entertainment-layout";
 import { useIPTVChannels } from "@/hooks/use-iptv-channels";
 import { useHomepageSettings } from "@/hooks/use-homepage-settings";
-import { useAuth } from "@/contexts/auth-context";
 import {
   SetflixContentItem,
   groupChannelsByCategory,
@@ -20,8 +18,6 @@ import {
 } from "@/lib/iptv";
 
 export default function Home() {
-  const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const { settings } = useHomepageSettings();
   const [selectedContent, setSelectedContent] =
     useState<SetflixContentItem | null>(null);
@@ -42,11 +38,6 @@ export default function Home() {
       | SetflixContentItem
       | { url?: string; title: string; [key: string]: any }
   ) => {
-    if (!isAuthenticated) {
-      const currentPath = window.location.pathname;
-      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
-      return;
-    }
     if (item?.url) {
       setCurrentStreamUrl(item.url);
       setCurrentStreamTitle(item.title);

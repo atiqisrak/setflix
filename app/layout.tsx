@@ -1,18 +1,13 @@
 import type React from "react";
 import type { Metadata, Viewport } from "next";
-import { Bebas_Neue } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SearchProvider } from "@/contexts/search-context";
 import { ProviderProvider } from "@/contexts/provider-context";
 import { AuthProvider } from "@/contexts/auth-context";
+import { FamilyProvider } from "@/contexts/family-context";
+import ProfileGate from "@/components/profile-gate";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import "./globals.css";
-
-const bebasNeue = Bebas_Neue({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-bebas-neue",
-});
 
 export const metadata: Metadata = {
   title: "Setflix - Stream Your Favorite Content",
@@ -49,15 +44,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${bebasNeue.variable} font-sans antialiased`}
-        suppressHydrationWarning
-      >
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>
-            <ProviderProvider>
-              <SearchProvider>{children}</SearchProvider>
-            </ProviderProvider>
+            <FamilyProvider>
+              <ProviderProvider>
+                <SearchProvider>
+                  <ProfileGate>{children}</ProfileGate>
+                </SearchProvider>
+              </ProviderProvider>
+            </FamilyProvider>
           </AuthProvider>
         </QueryProvider>
         <Analytics />

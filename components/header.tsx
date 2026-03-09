@@ -6,19 +6,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/logo";
 import ProfileDropdown from "@/components/profile-dropdown";
+import UserProfiles from "@/components/user-profiles";
 import NotificationsDropdown from "@/components/notifications-dropdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearch } from "@/contexts/search-context";
 import { useAuth } from "@/contexts/auth-context";
+import { useFamily } from "@/contexts/family-context";
 
 export default function Header() {
   const router = useRouter();
   const { setSearchQuery, addRecentSearch } = useSearch();
-  const { isAdmin, isAuthenticated } = useAuth();
+  const { isAdmin } = useAuth();
+  const { currentProfile } = useFamily();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isProfilePickerOpen, setIsProfilePickerOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
 
@@ -34,7 +38,9 @@ export default function Header() {
   const navItems = [
     { label: "All Channels", href: "/channels" },
     { label: "Browse", href: "/browse" },
-    ...(isAuthenticated ? [{ label: "My List", href: "/my-list" }] : []),
+    { label: "Movies", href: "/movies" },
+    { label: "TV Shows", href: "/shows" },
+    { label: "My List", href: "/my-list" },
     ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
   ];
 
@@ -147,13 +153,25 @@ export default function Header() {
                 setIsProfileOpen(!isProfileOpen);
                 setIsNotificationsOpen(false);
               }}
-              className="p-2 hover:bg-foreground/10 rounded transition"
+              className="flex items-center gap-2 p-1.5 hover:bg-foreground/10 rounded transition"
+              title={currentProfile?.name}
             >
-              <User size={18} className="text-foreground" />
+              {currentProfile?.avatarUrl ? (
+                <img
+                  src={currentProfile.avatarUrl}
+                  alt=""
+                  className="w-8 h-8 rounded object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded bg-accent flex items-center justify-center">
+                  <User size={18} className="text-accent-foreground" />
+                </div>
+              )}
             </button>
             <ProfileDropdown
               isOpen={isProfileOpen}
               onClose={() => setIsProfileOpen(false)}
+              onSwitchProfile={() => setIsProfilePickerOpen(true)}
             />
           </div>
 
@@ -170,6 +188,11 @@ export default function Header() {
           </button>
         </div>
       </div>
+
+      <UserProfiles
+        isOpen={isProfilePickerOpen}
+        onClose={() => setIsProfilePickerOpen(false)}
+      />
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (

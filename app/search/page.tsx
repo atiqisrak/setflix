@@ -1,25 +1,30 @@
 "use client";
 
 import { useState, useEffect, Suspense, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import AnimatedContentCard from "@/components/animated-content-card";
 import VideoPlayer from "@/components/video-player";
 import ContentDetailModal from "@/components/content-detail-modal";
-import { Search, X } from "lucide-react";
+import { Search, X, Play } from "lucide-react";
 import { useSearch } from "@/contexts/search-context";
-import { useAuth } from "@/contexts/auth-context";
+import { useMyList } from "@/hooks/use-my-list";
 import {
   SetflixContentItem,
   groupChannelsByCategory,
   transformIPTVToContent,
 } from "@/lib/iptv";
+import type { MovieItem, SeriesItem } from "@/lib/content/types";
 import { useIPTVChannels } from "@/hooks/use-iptv-channels";
 
+type SearchResultItem =
+  | { type: "Live"; item: SetflixContentItem }
+  | { type: "Movie"; item: MovieItem }
+  | { type: "TV Show"; item: SeriesItem };
+
 function SearchContent() {
-  const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") || "";
   const categoryParam = searchParams.get("category") || "";
@@ -34,15 +39,37 @@ function SearchContent() {
   } = useSearch();
 
   const { channels, isLoading } = useIPTVChannels();
+  const { addToList, isInList } = useMyList();
 
+  const [catalogResults, setCatalogResults] = useState<{ movies: MovieItem[]; shows: SeriesItem[] }>({ movies: [], shows: [] });
+  const [catalogLoading, setCatalogLoading] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [currentStreamUrl, setCurrentStreamUrl] = useState<string>("");
   const [currentStreamTitle, setCurrentStreamTitle] = useState<string>("");
-  const [selectedContent, setSelectedContent] =
-    useState<SetflixContentItem | null>(null);
+  const [selectedContent, setSelectedContent] = useState<SetflixContentItem | null>(null);
+  const [selectedMovie, setSelectedMovie] = useState<MovieItem | null>(null);
+  const [selectedShow, setSelectedShow] = useState<SeriesItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [colsPerRow, setColsPerRow] = useState(5);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setCatalogResults({ movies: [], shows: [] });
+      return;
+    }
+    setCatalogLoading(true);
+    fetch(`/api/catalog/search?q=${encodeURIComponent(searchQuery)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setCatalogResults({
+          movies: Array.isArray(data.movies) ? data.movies : [],
+          shows: Array.isArray(data.shows) ? data.shows : [],
+        });
+      })
+      .catch(() => setCatalogResults({ movies: [], shows: [] }))
+      .finally(() => setCatalogLoading(false));
+  }, [searchQuery]);
 
   useEffect(() => {
     const updateColsPerRow = () => {
@@ -80,9 +107,19 @@ function SearchContent() {
   }, [categoryParam, channels, groupedChannels, isLoading]);
 
   // Determine which results to show
-  const displayResults = categoryParam ? categoryResults : searchResults;
-  const hasResults = displayResults.length > 0;
   const isCategorySearch = !!categoryParam;
+  const displayResultsForCategory = categoryParam ? categoryResults : [];
+  const displayResultsUnified: SearchResultItem[] = useMemo(() => {
+    if (categoryParam) return [];
+    const live: SearchResultItem[] = searchResults.map((item) => ({ type: "Live" as const, item }));
+    const movies: SearchResultItem[] = catalogResults.movies.map((item) => ({ type: "Movie" as const, item }));
+    const shows: SearchResultItem[] = catalogResults.shows.map((item) => ({ type: "TV Show" as const, item }));
+    return [...live, ...movies, ...shows];
+  }, [categoryParam, searchResults, catalogResults]);
+
+  const hasResults = isCategorySearch
+    ? displayResultsForCategory.length > 0
+    : displayResultsUnified.length > 0;
 
   // Sync URL query param with search state
   useEffect(() => {
@@ -108,15 +145,11 @@ function SearchContent() {
   const handlePlay = (
     item:
       | SetflixContentItem
-      | { url?: string; title: string; [key: string]: any }
+      | { url?: string; streamUrl?: string; title: string; [key: string]: unknown }
   ) => {
-    if (!isAuthenticated) {
-      const currentPath = window.location.pathname + window.location.search;
-      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
-      return;
-    }
-    if (item.url) {
-      setCurrentStreamUrl(item.url);
+    const url = "url" in item ? item.url : "streamUrl" in item ? item.streamUrl : undefined;
+    if (url) {
+      setCurrentStreamUrl(url);
       setCurrentStreamTitle(item.title);
       setIsVideoPlayerOpen(true);
     }
@@ -185,48 +218,123 @@ function SearchContent() {
             )}
           </div>
 
-          {(isSearching || isLoading) && (
+          {(isSearching || isLoading || (!!searchQuery && catalogLoading)) && (
             <div className="flex items-center justify-center py-20">
-              <div className="text-foreground/60">Loading channels...</div>
+              <div className="text-foreground/60">Searching...</div>
             </div>
           )}
 
-          {!isSearching && !isLoading && (searchQuery || categoryParam) && (
+          {!isSearching && !isLoading && !(searchQuery && catalogLoading) && (searchQuery || categoryParam) && (
             <div>
               {hasResults ? (
                 <>
                   <h2 className="text-2xl font-bold text-foreground mb-6">
                     {isCategorySearch ? (
                       <>
-                        {displayResults.length}{" "}
-                        {displayResults.length === 1 ? "channel" : "channels"}{" "}
+                        {displayResultsForCategory.length}{" "}
+                        {displayResultsForCategory.length === 1 ? "channel" : "channels"}{" "}
                         in <span className="text-accent">{categoryParam}</span>
                       </>
                     ) : (
                       <>
-                        {displayResults.length} result
-                        {displayResults.length !== 1 ? "s" : ""} for "
-                        {searchQuery}"
+                        {displayResultsUnified.length} result
+                        {displayResultsUnified.length !== 1 ? "s" : ""} for &quot;
+                        {searchQuery}&quot;
                       </>
                     )}
                   </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 md:gap-6">
-                    {displayResults.map((item, index) => (
-                      <AnimatedContentCard
-                        key={item.id}
-                        item={item}
-                        index={index}
-                        layout="grid"
-                        totalItems={displayResults.length}
-                        colsPerRow={colsPerRow}
-                        hoveredIndex={hoveredIndex}
-                        onHover={setHoveredIndex}
-                        onLeave={() => setHoveredIndex(null)}
-                        onPlay={() => handlePlay(item)}
-                        onMoreInfo={() => handleMoreInfo(item)}
-                      />
-                    ))}
-                  </div>
+                  {isCategorySearch ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 md:gap-6">
+                      {displayResultsForCategory.map((item, index) => (
+                        <AnimatedContentCard
+                          key={item.id}
+                          item={item}
+                          index={index}
+                          layout="grid"
+                          totalItems={displayResultsForCategory.length}
+                          colsPerRow={colsPerRow}
+                          hoveredIndex={hoveredIndex}
+                          onHover={setHoveredIndex}
+                          onLeave={() => setHoveredIndex(null)}
+                          onPlay={() => handlePlay(item)}
+                          onMoreInfo={() => handleMoreInfo(item)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 md:gap-6">
+                      {displayResultsUnified.map((entry, index) => {
+                        if (entry.type === "Live") {
+                          return (
+                            <AnimatedContentCard
+                              key={`live-${entry.item.id}`}
+                              item={entry.item}
+                              index={index}
+                              layout="grid"
+                              totalItems={displayResultsUnified.length}
+                              colsPerRow={colsPerRow}
+                              hoveredIndex={hoveredIndex}
+                              onHover={setHoveredIndex}
+                              onLeave={() => setHoveredIndex(null)}
+                              onPlay={() => handlePlay(entry.item)}
+                              onMoreInfo={() => handleMoreInfo(entry.item)}
+                            />
+                          );
+                        }
+                        const item = entry.item;
+                        const isMovie = entry.type === "Movie";
+                        const streamUrl = "streamUrl" in item ? item.streamUrl : undefined;
+                        return (
+                          <div
+                            key={`${entry.type}-${item.id}`}
+                            className="group relative rounded-lg overflow-hidden bg-card/50 aspect-[2/3] cursor-pointer"
+                            onClick={() => isMovie ? setSelectedMovie(item as MovieItem) : setSelectedShow(item as SeriesItem)}
+                          >
+                            <img
+                              src={item.image || "/placeholder.svg"}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute top-2 left-2">
+                              <span className="px-2 py-0.5 rounded text-xs font-medium bg-accent/90 text-accent-foreground">
+                                {entry.type}
+                              </span>
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <h3 className="text-white font-semibold text-sm line-clamp-2">{item.title}</h3>
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (streamUrl) {
+                                      setCurrentStreamUrl(streamUrl);
+                                      setCurrentStreamTitle(item.title);
+                                      setIsVideoPlayerOpen(true);
+                                    }
+                                  }}
+                                  disabled={!streamUrl}
+                                  className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground px-2 py-1.5 rounded text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+                                >
+                                  <Play size={12} fill="currentColor" />
+                                  Play
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    addToList(item);
+                                  }}
+                                  className="px-2 py-1.5 border border-white/50 rounded text-xs text-white hover:bg-white/10 flex items-center gap-1"
+                                >
+                                  {isInList(item.id) ? "In list" : "Add"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -281,6 +389,77 @@ function SearchContent() {
           onPlay={handlePlay}
           item={selectedContent}
         />
+      )}
+
+      {selectedMovie && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-card rounded-lg border border-border max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-foreground mb-2">{selectedMovie.title}</h3>
+            <p className="text-foreground/60 text-sm mb-4 line-clamp-3">{selectedMovie.description}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (selectedMovie.streamUrl) {
+                    setCurrentStreamUrl(selectedMovie.streamUrl);
+                    setCurrentStreamTitle(selectedMovie.title);
+                    setIsVideoPlayerOpen(true);
+                  }
+                  setSelectedMovie(null);
+                }}
+                disabled={!selectedMovie.streamUrl}
+                className="flex-1 bg-accent text-accent-foreground py-2 rounded font-semibold disabled:opacity-50"
+              >
+                Play
+              </button>
+              <button
+                onClick={() => {
+                  addToList(selectedMovie);
+                  setSelectedMovie(null);
+                }}
+                className="px-4 py-2 border border-border rounded hover:bg-foreground/5"
+              >
+                {isInList(selectedMovie.id) ? "In list" : "Add to my list"}
+              </button>
+              <button onClick={() => setSelectedMovie(null)} className="px-4 py-2 rounded border border-border hover:bg-foreground/5">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedShow && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-card rounded-lg border border-border max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-foreground mb-2">{selectedShow.title}</h3>
+            <p className="text-foreground/60 text-sm mb-4 line-clamp-3">{selectedShow.description}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const url = selectedShow.streamUrl || selectedShow.episodes?.[0]?.streamUrl;
+                  if (url) {
+                    setCurrentStreamUrl(url);
+                    setCurrentStreamTitle(selectedShow.title);
+                    setIsVideoPlayerOpen(true);
+                  }
+                  setSelectedShow(null);
+                }}
+                disabled={!selectedShow.streamUrl && !selectedShow.episodes?.length}
+                className="flex-1 bg-accent text-accent-foreground py-2 rounded font-semibold disabled:opacity-50"
+              >
+                Play
+              </button>
+              <button
+                onClick={() => {
+                  addToList(selectedShow);
+                  setSelectedShow(null);
+                }}
+                className="px-4 py-2 border border-border rounded hover:bg-foreground/5"
+              >
+                {isInList(selectedShow.id) ? "In list" : "Add to my list"}
+              </button>
+              <button onClick={() => setSelectedShow(null)} className="px-4 py-2 rounded border border-border hover:bg-foreground/5">Close</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

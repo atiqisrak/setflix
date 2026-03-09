@@ -10,6 +10,13 @@ export async function GET(request: NextRequest) {
     (searchParams.get("orientation") as "landscape" | "portrait" | "square") ||
     "landscape";
 
+  // When PEXELS_API_KEY is unset, return null/empty without calling API (no 401, no server log)
+  if (!process.env.PEXELS_API_KEY || process.env.PEXELS_API_KEY === "YOUR_PEXELS_API_KEY") {
+    if (type === "video") return NextResponse.json({ video: null });
+    if (count > 1) return NextResponse.json({ photos: [] });
+    return NextResponse.json({ photo: null });
+  }
+
   try {
     if (type === "video") {
       const video = await getPexelsVideo(query);

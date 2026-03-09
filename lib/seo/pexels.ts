@@ -1,8 +1,10 @@
 import { createClient } from "pexels";
 
-const client = createClient(
-  process.env.PEXELS_API_KEY || "YOUR_PEXELS_API_KEY"
-);
+function getClient() {
+  const key = process.env.PEXELS_API_KEY;
+  if (!key || key === "YOUR_PEXELS_API_KEY") return null;
+  return createClient(key);
+}
 
 export interface PexelsPhoto {
   id: number;
@@ -49,6 +51,9 @@ export async function getPexelsPhoto(
   query: string,
   orientation: "landscape" | "portrait" | "square" = "landscape"
 ): Promise<PexelsPhoto | null> {
+  const client = getClient();
+  if (!client) return null;
+
   try {
     const date = new Date();
     const dayOfYear = Math.floor(
@@ -68,9 +73,13 @@ export async function getPexelsPhoto(
       return response.photos[0] as unknown as PexelsPhoto;
     }
     return null;
-  } catch (error: any) {
-    // Handle rate limiting and other errors gracefully
-    if (error?.status === 429 || error?.message?.includes("Too Many Requests")) {
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      (error as { status?: number }).status === 429
+    ) {
       console.warn("Pexels API rate limit reached, using fallback");
     } else {
       console.error("Error fetching Pexels photo:", error);
@@ -84,6 +93,9 @@ export async function getPexelsPhotos(
   count: number = 6,
   orientation: "landscape" | "portrait" | "square" = "landscape"
 ): Promise<PexelsPhoto[]> {
+  const client = getClient();
+  if (!client) return [];
+
   try {
     const date = new Date();
     const dayOfYear = Math.floor(
@@ -103,9 +115,13 @@ export async function getPexelsPhotos(
       return response.photos as unknown as PexelsPhoto[];
     }
     return [];
-  } catch (error: any) {
-    // Handle rate limiting and other errors gracefully
-    if (error?.status === 429 || error?.message?.includes("Too Many Requests")) {
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      (error as { status?: number }).status === 429
+    ) {
       console.warn("Pexels API rate limit reached, using fallback");
     } else {
       console.error("Error fetching Pexels photos:", error);
@@ -117,6 +133,9 @@ export async function getPexelsPhotos(
 export async function getPexelsVideo(
   query: string
 ): Promise<PexelsVideo | null> {
+  const client = getClient();
+  if (!client) return null;
+
   try {
     const date = new Date();
     const dayOfYear = Math.floor(
@@ -140,4 +159,3 @@ export async function getPexelsVideo(
     return null;
   }
 }
-

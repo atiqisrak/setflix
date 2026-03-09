@@ -24,6 +24,9 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
   const [error, setError] = useState<string | null>(null);
   const [qualities, setQualities] = useState<QualityLevel[]>([]);
   const [currentQuality, setCurrentQuality] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playbackRate, setPlaybackRateState] = useState(1);
 
 
   // Initialize video player
@@ -177,6 +180,23 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
       setIsLoading(false);
       setError(null);
     };
+    const handleTimeUpdate = () => {
+      if (video.currentTime !== undefined && !Number.isNaN(video.currentTime)) {
+        setCurrentTime(video.currentTime);
+      }
+    };
+    const handleDurationChange = () => {
+      const d = video.duration;
+      if (typeof d === "number" && Number.isFinite(d) && !Number.isNaN(d)) {
+        setDuration(d);
+      }
+    };
+    const handleLoadedMetadata = () => {
+      const d = video.duration;
+      if (typeof d === "number" && Number.isFinite(d) && !Number.isNaN(d)) {
+        setDuration(d);
+      }
+    };
     const handleError = (e: Event) => {
       console.error("Video error:", e);
       const videoError = (video.error && video.error.code) || 0;
@@ -206,6 +226,9 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
     video.addEventListener("waiting", handleWaiting);
     video.addEventListener("canplay", handleCanPlay);
     video.addEventListener("loadeddata", handleLoadedData);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("durationchange", handleDurationChange);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
     video.addEventListener("error", handleError);
     const handleVolumeChange = () => {
       // Update state from video element - this won't cause reload since 
@@ -226,6 +249,9 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
       video.removeEventListener("waiting", handleWaiting);
       video.removeEventListener("canplay", handleCanPlay);
       video.removeEventListener("loadeddata", handleLoadedData);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("durationchange", handleDurationChange);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       video.removeEventListener("error", handleError);
       video.removeEventListener("volumechange", handleVolumeChange);
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
@@ -297,7 +323,41 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
     }
   }, [isFullscreen]);
 
-  // Keyboard shortcuts
+  const setQuality = useCallback((levelIndex: number) => {
+    if (!hlsRef.current) return;
+    
+    if (levelIndex === 0 || levelIndex === -1) {
+      // Auto quality
+      hlsRef.current.currentLevel = -1;
+    } else {
+      hlsRef.current.currentLevel = levelIndex - 1; // Subtract 1 because Auto is index 0
+    }
+    
+    setCurrentQuality(levelIndex);
+  }, []);
+
+  const seek = useCallback((time: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const t = Math.max(0, duration > 0 ? Math.min(time, duration) : time);
+    video.currentTime = t;
+    setCurrentTime(t);
+  }, [duration]);
+
+  const skipBackward = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = Math.max(0, video.currentTime - 10);
+  }, []);
+
+  const skipForward = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const d = Number.isFinite(video.duration) ? video.duration : Infinity;
+    video.currentTime = Math.min(video.currentTime + 10, d);
+  }, []);
+
+  // Keyboard shortcuts (must be after skipBackward/skipForward are defined)
   useEffect(() => {
     if (!isOpen || !videoRef.current) return;
 
@@ -317,6 +377,14 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
         case " ": // Space - play/pause
           e.preventDefault();
           togglePlay();
+          break;
+        case "ArrowLeft": // Left - skip back 10s
+          e.preventDefault();
+          skipBackward();
+          break;
+        case "ArrowRight": // Right - skip forward 10s
+          e.preventDefault();
+          skipForward();
           break;
         case "ArrowUp": // Up arrow - volume up
           e.preventDefault();
@@ -341,21 +409,14 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, volume, togglePlay, toggleMute, toggleFullscreen, setVolumeValue]);
+  }, [isOpen, volume, togglePlay, toggleMute, toggleFullscreen, setVolumeValue, skipBackward, skipForward]);
 
-  const setQuality = useCallback((levelIndex: number) => {
-    if (!hlsRef.current) return;
-    
-    if (levelIndex === 0 || levelIndex === -1) {
-      // Auto quality
-      hlsRef.current.currentLevel = -1;
-    } else {
-      hlsRef.current.currentLevel = levelIndex - 1; // Subtract 1 because Auto is index 0
-    }
-    
-    setCurrentQuality(levelIndex);
+  const setPlaybackRate = useCallback((rate: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.playbackRate = rate;
+    setPlaybackRateState(rate);
   }, []);
-
 
   return {
     videoRef,
@@ -368,11 +429,18 @@ export function useVideoPlayerEnhanced({ isOpen, streamUrl }: UseVideoPlayerEnha
     error,
     qualities,
     currentQuality,
+    currentTime,
+    duration,
+    playbackRate,
     togglePlay,
     toggleMute,
     setVolume: setVolumeValue,
     setQuality,
+    setPlaybackRate,
     toggleFullscreen,
+    seek,
+    skipBackward,
+    skipForward,
   };
 }
 

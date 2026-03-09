@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { Play, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeVariants } from "@/lib/animations";
 import { usePexelsMedia } from "@/hooks/use-pexels-media";
 import { useHomepageSettings } from "@/hooks/use-homepage-settings";
-import { useAuth } from "@/contexts/auth-context";
 
 interface HeroContent {
   title: string;
@@ -24,17 +22,10 @@ interface HeroBannerProps {
 }
 
 export default function HeroBanner({ onPlay, onMoreInfo }: HeroBannerProps) {
-  const router = useRouter();
-  const { isAuthenticated } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { settings, loading: settingsLoading } = useHomepageSettings();
 
   const handlePlayClick = () => {
-    if (!isAuthenticated) {
-      const currentPath = window.location.pathname;
-      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
-      return;
-    }
     onPlay?.();
   };
 

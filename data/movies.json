@@ -1,0 +1,57 @@
+[
+  {
+    "id": "movie-big-buck-bunny",
+    "title": "Big Buck Bunny",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Big_buck_bunny_poster_big.jpg/440px-Big_buck_bunny_poster_big.jpg",
+    "description": "A giant rabbit is bullied by three rodents. When a butterfly's life is cut short, the rabbit decides to take a stand. A short animated film by the Blender Foundation.",
+    "year": 2008,
+    "genres": ["Animation", "Comedy", "Family"],
+    "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "rating": 88,
+    "maturity": "G"
+  },
+  {
+    "id": "movie-sintel",
+    "title": "Sintel",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Sintel_poster.jpg/440px-Sintel_poster.jpg",
+    "description": "A lonely young woman searches for her lost dragon companion in a fantastical world. An open movie by the Blender Foundation.",
+    "year": 2010,
+    "genres": ["Animation", "Fantasy", "Adventure"],
+    "streamUrl": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+    "rating": 85,
+    "maturity": "PG"
+  },
+  {
+    "id": "movie-tears-of-steel",
+    "title": "Tears of Steel",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Tears_of_Steel_poster.jpg/440px-Tears_of_Steel_poster.jpg",
+    "description": "In a post-apocalyptic Amsterdam, warriors and robots fight to restore the past. Open movie by the Blender Foundation.",
+    "year": 2012,
+    "genres": ["Sci-Fi", "Action", "Short"],
+    "streamUrl": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
+    "rating": 82,
+    "maturity": "PG-13"
+  },
+  {
+    "id": "movie-caminandes",
+    "title": "Caminandes: Llama Drama",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Caminandes_2_-_Llama_Drama.jpg/440px-Caminandes_2_-_Llama_Drama.jpg",
+    "description": "A llama tries to cross a fence to reach tasty bushes. A short comedy from the Blender Foundation.",
+    "year": 2013,
+    "genres": ["Animation", "Comedy", "Short"],
+    "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "rating": 80,
+    "maturity": "G"
+  },
+  {
+    "id": "movie-sample",
+    "title": "Sample Movie",
+    "image": "https://picsum.photos/seed/movie5/300/450",
+    "description": "A sample entry for the Setflix catalog. Add your own movies to data/movies.json or connect a catalog source.",
+    "year": 2024,
+    "genres": ["Drama", "Adventure"],
+    "streamUrl": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "rating": 75,
+    "maturity": "PG-13"
+  }
+]
