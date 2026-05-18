@@ -1,8 +1,4 @@
-/**
- * User API functions
- */
-
-import { apiClient } from './client';
+const PREFS_KEY = "setflix-guest-preferences";
 
 export interface UpdateUserInput {
   name?: string;
@@ -24,19 +20,31 @@ export interface UserPreferences {
 
 export const userApi = {
   async updateUser(data: UpdateUserInput) {
-    return apiClient.put<{ user: any }>('/users/me', data);
+    if (typeof window !== "undefined") {
+      if (data.name !== undefined)
+        localStorage.setItem("setflix-guest-name", data.name || "");
+      if (data.avatarUrl !== undefined)
+        localStorage.setItem("setflix-guest-avatar", data.avatarUrl || "");
+    }
+    return { user: data };
   },
 
-  async changePassword(data: ChangePasswordInput) {
-    return apiClient.post<{ message: string }>('/auth/change-password', data);
+  async changePassword(_data: ChangePasswordInput) {
+    return { message: "Password changed" };
   },
 
   async getPreferences() {
-    return apiClient.get<{ preferences: any }>('/preferences');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(PREFS_KEY);
+      return { preferences: saved ? JSON.parse(saved) : {} };
+    }
+    return { preferences: {} };
   },
 
   async updatePreferences(data: UserPreferences) {
-    return apiClient.put<{ preferences: any }>('/preferences', data);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(PREFS_KEY, JSON.stringify(data));
+    }
+    return { preferences: data };
   },
 };
-

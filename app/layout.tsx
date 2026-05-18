@@ -1,6 +1,6 @@
 import type React from "react";
 import type { Metadata, Viewport } from "next";
-import { Bebas_Neue } from "next/font/google";
+import { Bebas_Neue, Rajdhani } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SearchProvider } from "@/contexts/search-context";
 import { ProviderProvider } from "@/contexts/provider-context";
@@ -12,6 +12,12 @@ const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-bebas-neue",
+});
+
+const rajdhani = Rajdhani({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rajdhani",
 });
 
 export const metadata: Metadata = {
@@ -38,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0e27",
+  themeColor: "#060a18",
   userScalable: false,
 };
 
@@ -50,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${bebasNeue.variable} font-sans antialiased`}
+        className={`${bebasNeue.variable} ${rajdhani.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <QueryProvider>

@@ -4,12 +4,18 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
-  ReactNode,
   useCallback,
+  ReactNode,
 } from "react";
-import { authApi, User } from "@/lib/api/auth";
-import { apiClient } from "@/lib/api/client";
+import { User } from "@/lib/api/auth";
+
+const GUEST_USER: User = {
+  id: "guest",
+  email: "guest@setflix.local",
+  name: "Guest",
+  role: "admin",
+  emailVerified: true,
+};
 
 interface AuthContextType {
   user: User | null;
@@ -27,111 +33,39 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function loadGuestUser(): User {
+  if (typeof window === "undefined") return GUEST_USER;
+  const savedName = localStorage.getItem("setflix-guest-name");
+  const savedAvatar = localStorage.getItem("setflix-guest-avatar");
+  return {
+    ...GUEST_USER,
+    name: savedName || GUEST_USER.name,
+    avatarUrl: savedAvatar || undefined,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User>(loadGuestUser);
 
-  const loadUser = useCallback(async () => {
-    if (!apiClient.isAuthenticated()) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const currentUser = await authApi.getCurrentUser();
-      setUser(currentUser);
-      setError(null);
-    } catch (err) {
-      setUser(null);
-      apiClient.clearAuth();
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
-
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await authApi.login({ email, password });
-      setUser(response.user);
-    } catch (err: any) {
-      const errorMessage = err?.error || "Failed to login";
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const register = useCallback(
-    async (email: string, password: string, name?: string) => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        // Register but don't auto-login - user needs to sign in separately
-        await authApi.register({ email, password, name });
-        // Clear any existing auth state
-        apiClient.clearAuth();
-        setUser(null);
-      } catch (err: any) {
-        const errorMessage = err?.error || "Failed to register";
-        setError(errorMessage);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  const logout = useCallback(async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // Ignore errors on logout
-    } finally {
-      setUser(null);
-      apiClient.clearAuth();
-    }
-  }, []);
+  const login = useCallback(async () => {}, []);
+  const register = useCallback(async () => {}, []);
+  const logout = useCallback(async () => {}, []);
 
   const refreshUser = useCallback(async () => {
-    if (!apiClient.isAuthenticated()) {
-      setUser(null);
-      return;
-    }
-
-    try {
-      const currentUser = await authApi.getCurrentUser();
-      setUser(currentUser);
-    } catch {
-      setUser(null);
-      apiClient.clearAuth();
-    }
+    setUser(loadGuestUser());
   }, []);
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  const isAdmin = user?.role === 'admin';
-  const isPremium = user?.role === 'premium_subscriber' || isAdmin;
+  const clearError = useCallback(() => {}, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
-        isLoading,
-        error,
-        isAdmin,
-        isPremium,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        isAdmin: true,
+        isPremium: true,
         login,
         register,
         logout,
@@ -146,10 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-
   return context;
 }

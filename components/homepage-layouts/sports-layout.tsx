@@ -9,6 +9,8 @@ import {
   ArrowRight,
   Check,
   TrendingUp,
+  MapPin,
+  Tv,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -104,6 +106,60 @@ export default function SportsLayout({
 
   return (
     <div className="space-y-16 md:space-y-24">
+
+      {/* World Cup 2026 Banner */}
+      <section className="relative overflow-hidden rounded-2xl p-8 md:p-12 border border-[#ffc400]/30"
+        style={{
+          background: "linear-gradient(135deg, #0a1628 0%, #060a18 40%, #1a0800 100%)",
+          boxShadow: "0 0 60px rgba(255, 196, 0, 0.08), inset 0 1px 0 rgba(255, 196, 0, 0.15)",
+        }}
+      >
+        {/* Gold top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#ffc400] to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-end pr-8 pointer-events-none select-none">
+          <span className="text-[200px] opacity-[0.05]">🏆</span>
+        </div>
+        {/* Animated glow dots */}
+        <div className="absolute top-8 right-32 w-48 h-48 rounded-full bg-[#ffc400]/5 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-4 right-12 w-32 h-32 rounded-full bg-[#ff5e2b]/5 blur-2xl pointer-events-none" />
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7 }}
+          className="relative z-10 max-w-2xl"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 bg-[#ffc400]/15 border border-[#ffc400]/30 text-[#ffc400] font-bold text-xs uppercase tracking-[0.3em] px-3 py-1.5 rounded-full">
+              <Trophy size={11} />
+              FIFA World Cup 2026
+            </span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-2 leading-tight" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.04em" }}>
+            USA · CANADA · MEXICO
+          </h2>
+          <h3 className="text-2xl md:text-4xl font-black mb-4 leading-tight" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.04em", background: "linear-gradient(90deg, #ffc400, #ff8c00)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            THE GREATEST SHOW ON EARTH
+          </h3>
+          <p className="text-white/60 text-base md:text-lg mb-6 font-medium">
+            48 teams &nbsp;·&nbsp; 104 matches &nbsp;·&nbsp; 16 venues &nbsp;·&nbsp; Opening June 11, 2026
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/worldcup">
+              <Button className="font-bold gap-2 px-6 py-5 text-base text-black" style={{ background: "linear-gradient(135deg, #ffc400, #ff8c00)" }}>
+                <Trophy size={18} />
+                World Cup Hub
+              </Button>
+            </Link>
+            <Link href="/channels">
+              <Button variant="outline" className="border-white/20 hover:border-[#ffc400]/50 text-white bg-white/5 backdrop-blur-sm gap-2 px-6 py-5 text-base hover:text-[#ffc400]">
+                <Tv size={18} />
+                Watch Sports Live
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Hero Section with Featured Channels */}
       <section className="relative min-h-[500px] md:min-h-[700px] rounded-2xl overflow-hidden">
         <div
@@ -113,7 +169,7 @@ export default function SportsLayout({
             opacity: heroLoading ? 0.5 : 1,
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-green-900/95 via-green-800/85 to-green-900/95"></div>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(105deg, rgba(6,10,24,0.97) 0%, rgba(12,30,18,0.90) 50%, rgba(6,10,24,0.95) 100%)" }}></div>
         </div>
 
         {/* Featured Channels Grid Overlay */}
@@ -126,7 +182,7 @@ export default function SportsLayout({
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="aspect-video rounded-lg overflow-hidden border-2 border-green-400/30"
+                  className="aspect-video rounded-lg overflow-hidden border-2 border-[#00d65a]/30"
                 >
                   <img
                     src={channel.image || "/placeholder.svg"}
@@ -148,15 +204,15 @@ export default function SportsLayout({
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00d65a] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00d65a]"></span>
               </div>
-              <span className="text-green-400 font-bold text-sm md:text-base uppercase tracking-wider">
+              <span className="text-[#00d65a] font-bold text-sm md:text-base uppercase tracking-[0.2em]" style={{ fontFamily: "var(--font-display)" }}>
                 Live Sports Streaming
               </span>
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Never Miss a<span className="text-green-400"> Game</span>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-none" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.04em" }}>
+              NEVER MISS<br />A<span style={{ color: "#00d65a" }}> GAME</span>
             </h1>
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
               Stream live sports from around the world. Watch football,
@@ -166,19 +222,21 @@ export default function SportsLayout({
               <Link href="/channels">
                 <Button
                   size="lg"
-                  className="bg-green-500 hover:bg-green-600 text-white px-8 py-6 text-lg font-semibold flex items-center gap-2"
+                  className="text-black px-8 py-6 text-lg font-bold flex items-center gap-2"
+                  style={{ background: "linear-gradient(135deg, #00d65a, #00a844)", fontFamily: "var(--font-display)", letterSpacing: "0.06em" }}
                 >
-                  <Play size={24} fill="currentColor" />
-                  Start Watching
+                  <Play size={22} fill="currentColor" />
+                  START WATCHING
                 </Button>
               </Link>
               <Link href="/browse">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-white/30 hover:border-white text-white px-8 py-6 text-lg font-semibold bg-white/10 backdrop-blur-sm"
+                  className="border-2 border-white/25 hover:border-[#00d65a]/60 text-white px-8 py-6 text-lg font-bold bg-white/5 backdrop-blur-sm hover:text-[#00d65a]"
+                  style={{ fontFamily: "var(--font-display)", letterSpacing: "0.06em" }}
                 >
-                  Browse Channels
+                  BROWSE CHANNELS
                 </Button>
               </Link>
             </div>
@@ -191,7 +249,7 @@ export default function SportsLayout({
         <section className="relative">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <TrendingUp className="w-6 h-6 text-green-400" />
+              <TrendingUp className="w-6 h-6 text-[#00d65a]" />
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">
                 Trending Sports
               </h2>
@@ -199,7 +257,7 @@ export default function SportsLayout({
             <Link href="/channels">
               <Button
                 variant="ghost"
-                className="text-green-400 hover:text-green-300"
+                className="text-[#00d65a] hover:text-[#00ff7f]"
               >
                 View All <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
@@ -256,18 +314,18 @@ export default function SportsLayout({
                       className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
                       style={{ backgroundImage: `url('${feature.image}')` }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 via-green-800/40 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#060a18]/90 via-[#0c1228]/40 to-transparent"></div>
                     </div>
                   )}
                   <div className="absolute top-6 left-6 z-10">
-                    <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-[#00d65a] flex items-center justify-center">
                       <Icon className="w-7 h-7 text-white" />
                     </div>
                   </div>
                   {/* Channel count badge */}
                   {categoryChannels.length > 0 && (
                     <div className="absolute top-6 right-6 z-10">
-                      <div className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
+                      <div className="bg-[#00d65a]/90 backdrop-blur-sm text-black px-3 py-1 rounded-full text-sm font-bold">
                         {categoryChannels.length}+ Channels
                       </div>
                     </div>
@@ -287,7 +345,7 @@ export default function SportsLayout({
                       <motion.div
                         key={channel.id}
                         whileHover={{ scale: 1.1, zIndex: 10 }}
-                        className="aspect-video rounded overflow-hidden border border-green-500/30 cursor-pointer"
+                        className="aspect-video rounded overflow-hidden border border-[#00d65a]/30 cursor-pointer"
                         onClick={() => onPlay?.(channel)}
                       >
                         <img
@@ -320,7 +378,7 @@ export default function SportsLayout({
               <Link href={`/channels?category=${encodeURIComponent(category)}`}>
                 <Button
                   variant="ghost"
-                  className="text-green-400 hover:text-green-300"
+                  className="text-[#00d65a] hover:text-[#00ff7f]"
                 >
                   View All <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
@@ -352,7 +410,7 @@ export default function SportsLayout({
       })}
 
       {/* Stats Section with Dynamic Channel Count */}
-      <section className="py-12 md:py-16 bg-gradient-to-r from-green-900/20 via-green-800/10 to-transparent rounded-2xl border border-green-800/30 relative overflow-hidden">
+      <section className="py-12 md:py-16 rounded-2xl border border-[#1c2d50] relative overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,214,90,0.06) 0%, rgba(6,10,24,0.8) 50%, rgba(255,94,43,0.04) 100%)" }}>
         <div className="absolute inset-0 grid grid-cols-4 gap-4 opacity-5 pointer-events-none">
           {channels.slice(0, 8).map((channel) => (
             <div
@@ -374,7 +432,7 @@ export default function SportsLayout({
             viewport={{ once: true }}
             className="text-center"
           >
-            <Trophy className="w-10 h-10 md:w-12 md:h-12 text-green-500 mx-auto mb-4" />
+            <Trophy className="w-10 h-10 md:w-12 md:h-12 text-[#00d65a] mx-auto mb-4" />
             <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">
               Live
             </div>
@@ -387,7 +445,7 @@ export default function SportsLayout({
             transition={{ delay: 0.1 }}
             className="text-center"
           >
-            <Zap className="w-10 h-10 md:w-12 md:h-12 text-green-500 mx-auto mb-4" />
+            <Zap className="w-10 h-10 md:w-12 md:h-12 text-[#ff5e2b] mx-auto mb-4" />
             <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">
               24/7
             </div>
@@ -400,7 +458,7 @@ export default function SportsLayout({
             transition={{ delay: 0.2 }}
             className="text-center"
           >
-            <Play className="w-10 h-10 md:w-12 md:h-12 text-green-500 mx-auto mb-4" />
+            <Play className="w-10 h-10 md:w-12 md:h-12 text-[#ffc400] mx-auto mb-4" />
             <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">
               HD
             </div>
@@ -413,7 +471,7 @@ export default function SportsLayout({
             transition={{ delay: 0.3 }}
             className="text-center"
           >
-            <Globe className="w-10 h-10 md:w-12 md:h-12 text-green-500 mx-auto mb-4" />
+            <Globe className="w-10 h-10 md:w-12 md:h-12 text-[#00d65a] mx-auto mb-4" />
             <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">
               {channels.length > 0 ? `${channels.length}+` : "100+"}
             </div>
@@ -423,7 +481,7 @@ export default function SportsLayout({
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 md:py-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl text-center relative overflow-hidden">
+      <section className="py-12 md:py-16 rounded-2xl text-center relative overflow-hidden border border-[#00d65a]/20" style={{ background: "linear-gradient(135deg, #001f0e 0%, #003318 50%, #001f0e 100%)", boxShadow: "0 0 80px rgba(0, 214, 90, 0.1)" }}>
         <div className="absolute inset-0 grid grid-cols-6 gap-2 opacity-10">
           {channels.slice(0, 12).map((channel) => (
             <div
@@ -444,20 +502,21 @@ export default function SportsLayout({
           viewport={{ once: true }}
           className="relative z-10"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-            Ready to Watch Live Sports?
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00d65a] to-transparent" />
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-4" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.04em" }}>
+            READY TO WATCH LIVE SPORTS?
           </h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of sports fans streaming their favorite games in HD
-            quality
+          <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto font-medium">
+            Join thousands of sports fans streaming their favorite games in HD quality
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/channels">
               <Button
                 size="lg"
-                className="bg-white text-green-600 hover:bg-white/90 px-8 py-6 text-lg font-semibold"
+                className="text-black px-8 py-6 text-lg font-bold"
+                style={{ background: "linear-gradient(135deg, #00d65a, #00a844)", fontFamily: "var(--font-display)", letterSpacing: "0.06em" }}
               >
-                Explore Channels
+                EXPLORE CHANNELS
                 <ArrowRight size={20} className="ml-2" />
               </Button>
             </Link>
@@ -465,9 +524,10 @@ export default function SportsLayout({
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold"
+                className="border-2 border-[#00d65a]/50 text-[#00d65a] hover:bg-[#00d65a]/10 px-8 py-6 text-lg font-bold"
+                style={{ fontFamily: "var(--font-display)", letterSpacing: "0.06em" }}
               >
-                Sign Up Free
+                SIGN UP FREE
               </Button>
             </Link>
           </div>
